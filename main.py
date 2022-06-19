@@ -27,6 +27,8 @@ def get_metadata(file: pathlib.Path):
                    click.style(word_file_metadata.revision, fg="white"))
         click.echo(click.style("Application: ", fg="yellow") +
                    click.style(word_file_metadata.application_name, fg="white"))
+        click.echo(click.style("Editing time: ", fg="yellow") +
+                   click.style(word_file_metadata.editing_time, fg="white"))
     else:
         click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
 
@@ -82,11 +84,46 @@ def change_revision(file: pathlib.Path, new_revision: int):
         click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
 
 
+@click.command()
+@click.argument("file", type=pathlib.Path)
+@click.argument("new_application", type=str)
+def change_application(file: pathlib.Path, new_application: str):
+    """Change file application"""
+    if file.exists() is False:
+        click.echo(click.style(f"File {file} was not found.", fg="red"))
+        return
+
+    if file.suffix == ".docx":
+        word_file_metadata = word.Metadata(file)
+        word_file_metadata.application_name = new_application
+        click.secho("Success.", fg="green")
+    else:
+        click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
+
+
+@click.command()
+@click.argument("file", type=pathlib.Path)
+@click.argument("new_editing_time", type=int)
+def change_editing_time(file: pathlib.Path, new_editing_time: str):
+    """Change file editing time"""
+    if file.exists() is False:
+        click.echo(click.style(f"File {file} was not found.", fg="red"))
+        return
+
+    if file.suffix == ".docx":
+        word_file_metadata = word.Metadata(file)
+        word_file_metadata.editing_time = new_editing_time
+        click.secho("Success.", fg="green")
+    else:
+        click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
+
+
 main.add_command(get_metadata)
 main.add_command(change_creator)
 main.add_command(change_modifier)
 main.add_command(change_revision)
-
+main.add_command(change_application)
+main.add_command(change_editing_time)
 
 if __name__ == "__main__":
     main()
