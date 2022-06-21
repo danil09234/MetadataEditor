@@ -4,7 +4,7 @@ import click
 
 
 @click.group()
-@click.version_option(version="Beta 1.0")
+@click.version_option(version="Beta 1.2")
 def main():
     pass
 

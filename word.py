@@ -90,7 +90,11 @@ class WordCoreXml:
 
                 core_property_name = f"{self.__get_tag_namespace(property_name)}:{property_name}"
                 try:
-                    core_file.getElementsByTagName(core_property_name)[0].childNodes[0].data = property_value
+                    if core_file.getElementsByTagName(core_property_name)[0].childNodes.length == 0:
+                        text_node = domtree.createTextNode(property_value)
+                        core_file.getElementsByTagName(core_property_name)[0].childNodes.append(text_node)
+                    else:
+                        core_file.getElementsByTagName(core_property_name)[0].childNodes[0].data = property_value
                 except IndexError:
                     new_property = domtree.createElement(core_property_name)
                     new_property.appendChild(domtree.createTextNode(property_value))
