@@ -5,8 +5,24 @@ import re
 import os
 import shutil
 from typing import NamedTuple, Literal
+import xml.dom.minidom
+
 
 __word_file_suffixes = [".docx"]
+
+
+class WordCoreProperty(NamedTuple):
+    property_name: Literal[
+        "title", "subject", "keywords", "description", "created", "modified", "lastModifiedBy", "revision", "creator"
+    ]
+    property_value: str | None = None
+
+
+class WordAppProperty(NamedTuple):
+    property_name: Literal[
+        "TotalTime", "Application"
+    ]
+    property_value: str | None = None
 
 
 class WordProperty(NamedTuple):
@@ -23,6 +39,228 @@ def is_word_file(filepath: pathlib.Path) -> bool:
 
 class PropertyNotFoundError(Exception):
     pass
+
+
+class WordCoreXml:
+    """Class to work with core.xml file"""
+    def __recover_namespaces(self) -> None:
+        domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+        core_file = domtree.documentElement
+        namespaces = {
+            "xmlns:cp": "http://schemas.openxmlformats.org/package/2006/metadata/core-properties",
+            "xmlns:dc": "http://purl.org/dc/elements/1.1/",
+            "xmlns:dcterms": "http://purl.org/dc/terms/",
+            "xmlns:dcmitype": "http://purl.org/dc/dcmitype/",
+            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
+        }
+
+        for namespace, uri in namespaces.items():
+            core_file.setAttribute(namespace, uri)
+
+        with open(self.xml_file_path, "w", encoding='utf-8') as file:
+            domtree.writexml(file, encoding='utf-8')
+
+    @staticmethod
+    def __get_tag_namespace(tag: str) -> str | None:
+        core_namespaces = {
+            "dc": ["title", "subject", "creator", "description"],
+            "cp": ["keywords", "lastModifiedBy", "revision"],
+            "dcterms": ["created", "modified"]
+        }
+
+        for namespace, namespace_tags in core_namespaces.items():
+            for namespace_tag in namespace_tags:
+                if namespace_tag == tag:
+                    return namespace
+        return None
+
+    def __set_property(self, core_property: WordCoreProperty) -> None:
+        self.__recover_namespaces()
+
+        core_tags_subsequence = (
+            "title", "subject", "creator", "keywords", "description",
+            "lastModifiedBy", "revision", "created", "modified"
+        )
+
+        match core_property:
+            case WordCoreProperty(
+                    property_name=str("title" | "subject" | "creator" | "keywords" | "description" |
+                                      "lastModifiedBy" | "revision" | "created" | "modified" as property_name),
+                    property_value=str(property_value)):
+                domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+                core_file = domtree.documentElement
+
+                core_property_name = f"{self.__get_tag_namespace(property_name)}:{property_name}"
+                try:
+                    core_file.getElementsByTagName(core_property_name)[0].childNodes[0].data = property_value
+                except IndexError:
+                    new_property = domtree.createElement(core_property_name)
+                    new_property.appendChild(domtree.createTextNode(property_value))
+
+                    after_property = None
+                    for core_tag in core_tags_subsequence[core_tags_subsequence.index(property_name)+1:]:
+                        after_core_property_tag = f"{self.__get_tag_namespace(core_tag)}:{core_tag}"
+                        try:
+                            after_property = core_file.getElementsByTagName(after_core_property_tag)[0]
+                            break
+                        except IndexError:
+                            continue
+                    core_file.insertBefore(new_property, after_property)
+
+                with open(self.xml_file_path, "w", encoding='utf-8') as file:
+                    domtree.writexml(file, encoding='utf-8')
+            case _:
+                raise TypeError("WordCoreXml.__set_property(core_property) core_property should be WordCoreProperty"
+                                f"(not {type(core_property)})")
+
+    def __get_property(self, property_name: str) -> str | None:
+        match property_name:
+            case str():
+                domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+                core_file = domtree.documentElement
+
+                core_property_name = f"{self.__get_tag_namespace(property_name)}:{property_name}"
+                try:
+                    return core_file.getElementsByTagName(core_property_name)[0].childNodes[0].data
+
+                except IndexError:
+                    return None
+            case _:
+                raise TypeError(f"WordCoreXml.__get_property(property_name) property_name should be str"
+                                f"(not {type(property_name)})")
+
+    @property
+    def creator(self) -> str | None:
+        return self.__get_property("creator")
+
+    @creator.setter
+    def creator(self, value: str | None) -> None:
+        match value:
+            case str():
+                self.__set_property(WordCoreProperty("creator", value))
+            case None:
+                self.__set_property(WordCoreProperty("creator", ""))
+            case _:
+                raise TypeError(f"WordCoreXml.creator should be str (not {type(value)})")
+
+    @property
+    def last_modified_by(self) -> str | None:
+        return self.__get_property("lastModifiedBy")
+
+    @last_modified_by.setter
+    def last_modified_by(self, value: str | None) -> None:
+        match value:
+            case str():
+                self.__set_property(WordCoreProperty("lastModifiedBy", value))
+            case None:
+                self.__set_property(WordCoreProperty("lastModifiedBy", ""))
+            case _:
+                raise TypeError(f"WordCoreXml.last_modified_by should be str (not {type(value)})")
+
+    @property
+    def revision(self) -> int | None:
+        revision = self.__get_property("revision")
+        if revision is None:
+            return None
+        else:
+            return int(revision)
+
+    @revision.setter
+    def revision(self, value: int | None) -> None:
+        match value:
+            case int():
+                self.__set_property(WordCoreProperty("revision", str(value)))
+            case None:
+                self.__set_property(WordCoreProperty("revision", ""))
+            case _:
+                raise TypeError(f"WordCoreXml.revision should be int (not {type(value)})")
+
+    def __init__(self, xml_file_path: pathlib.Path):
+        self.xml_file_path = xml_file_path
+
+
+class WordAppXml:
+    """Class to work with app.xml file"""
+    def __set_property(self, app_property: WordAppProperty) -> None:
+        app_tags_subsequence = (
+            "Template", "TotalTime", "Pages", "Words", "Characters",
+            "Application", "DocSecurity", "Lines", "Paragraphs",
+            "ScaleCrop", "Company", "LinksUpToDate", "CharactersWithSpaces",
+            "SharedDoc", "HyperlinksChanged", "AppVersion"
+        )
+        match app_property:
+            case WordAppProperty("TotalTime" | "Application" as property_name, str() | None as property_value):
+                domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+                core_file = domtree.documentElement
+
+                try:
+                    core_file.getElementsByTagName(property_name)[0].childNodes[0].data = property_value
+                except IndexError:
+                    new_property = domtree.createElement(property_name)
+                    new_property.appendChild(domtree.createTextNode(property_value))
+
+                    after_property = None
+                    for core_tag in app_tags_subsequence[app_tags_subsequence.index(property_name) + 1:]:
+                        try:
+                            after_property = core_file.getElementsByTagName(core_tag)[0]
+                            break
+                        except IndexError:
+                            continue
+                    core_file.insertBefore(new_property, after_property)
+                with open(self.xml_file_path, "w", encoding='utf-8') as file:
+                    domtree.writexml(file, encoding='utf-8')
+            case _:
+                raise TypeError("WordXmlApp.__set_property(app_property) app_property should be WordAppProperty "
+                                f'(not {type(app_property)})')
+
+    def __get_property(self, app_property: str) -> str | None:
+        match app_property:
+            case str("TotalTime" | "Application" as property_name):
+                domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+                core_file = domtree.documentElement
+
+                try:
+                    return core_file.getElementsByTagName(property_name)[0].childNodes[0].data
+                except IndexError:
+                    return None
+            case _:
+                raise TypeError('WordAppXml.__get_property(app_property) app_property should '
+                                'be str("TotalTime" | "Application") '
+                                f'(not {type(app_property)})')
+
+    @property
+    def application(self) -> str | None:
+        return self.__get_property("Application")
+
+    @application.setter
+    def application(self, value: str | None) -> None:
+        match value:
+            case str():
+                self.__set_property(WordAppProperty("Application", value))
+            case _:
+                raise TypeError("WordAppXml.application should be str"
+                                f'(not {type(value)})')
+
+    @property
+    def total_time(self) -> int:
+        return int(self.__get_property("TotalTime"))
+
+    @total_time.setter
+    def total_time(self, value: int | None) -> None:
+        match value:
+            case int() | None:
+                self.__set_property(WordAppProperty("TotalTime", str(value)))
+            case _:
+                raise TypeError("WordAppXml.total_time should be int"
+                                f'(not "{type(value)}")')
+
+    def __init__(self, xml_file_path: pathlib.Path):
+        match xml_file_path:
+            case pathlib.Path():
+                self.xml_file_path = xml_file_path
+            case _:
+                raise TypeError("WordAppXml(xml_file_path) xml_file_path should be pathlib.Path"
+                                f'(not "{type(xml_file_path)}")')
 
 
 class Metadata:
@@ -44,172 +282,6 @@ class Metadata:
                 for f in files:
                     myzip.write(os.path.join(root, f), os.path.join(root.removeprefix(temp_folder), f))
 
-    def __get_property_from_file(self, property_name: str, property_xml_file: pathlib.Path):
-        match property_name, property_xml_file:
-            case str(), pathlib.Path(suffix=".xml"):
-                pass
-            case _, _:
-                raise TypeError(f"Metadata.__get_property_from_file(property_name, property_xml_file) should be"
-                                f'str, pathlib.Path(suffix=".xml")'
-                                f'(not {type(property_name)}, {type(property_xml_file)})')
-        self.__extract_all()
-        self.__register_all_namespaces(property_xml_file)
-
-        tree = ElementTree.parse(property_xml_file)
-        root = tree.getroot()
-
-        for element in root:
-            pattern = r"(\{.+\})(.+)"
-            element_tag = re.search(pattern, element.tag).group(2)
-            if element_tag == property_name:
-                self.__remove_temp_folder()
-                return element.text
-
-        self.__remove_temp_folder()
-        raise PropertyNotFoundError(f"property {property_name} not found")
-
-    def __set_property_from_file(self, property_name: str, property_value: str, property_xml_file: pathlib.Path):
-        match property_name, property_value, property_xml_file:
-            case str(), str(), pathlib.Path(suffix=".xml"):
-                pass
-            case _, _, _:
-                raise TypeError(f"Metadata.__set_property_from_file(property_name, property_value, property_xml_file)"
-                                f'should be str, str, pathlib.Path(suffix=".xml")'
-                                f"(not {type(property_name)}, {type(property_value)}, {type(property_xml_file)})")
-        self.__extract_all()
-        self.__register_all_namespaces(property_xml_file)
-
-        tree = ElementTree.parse(property_xml_file)
-        root = tree.getroot()
-
-        for element in root:
-            pattern = r"(\{.+\})(.+)"
-            element_tag = re.search(pattern, element.tag).group(2)
-            if element_tag == property_name:
-                element.text = property_value
-                tree.write(property_xml_file)
-                self.__pack_all()
-                self.__remove_temp_folder()
-                return
-        self.__remove_temp_folder()
-        raise PropertyNotFoundError(f"property {property_name} not found")
-
-    def __get_property_value(self, property_name: str) -> str:
-        match property_name:
-            case str():
-                property_xml_file = pathlib.Path(self._temp_folder_path.name, "docProps", "app.xml")
-                try:
-                    return self.__get_property_from_file(property_name, property_xml_file)
-                except PropertyNotFoundError:
-                    pass
-
-                property_xml_file = pathlib.Path(self._temp_folder_path.name, "docProps", "core.xml")
-                return self.__get_property_from_file(property_name, property_xml_file)
-            case _:
-                raise TypeError(f"Metadata.__get_property_value(self, property_name) property_name should be str"
-                                f"(not {type(property_name)})")
-
-    def __set_property(self, property_name: str, property_value: str):
-        match property_value, property_name:
-            case str(), str():
-                property_xml_file = pathlib.Path(self._temp_folder_path.name, "docProps", "app.xml")
-                try:
-                    self.__set_property_from_file(property_name, property_value, property_xml_file)
-                    return
-                except PropertyNotFoundError:
-                    pass
-
-                property_xml_file = pathlib.Path(self._temp_folder_path.name, "docProps", "core.xml")
-                self.__set_property_from_file(property_name, property_value, property_xml_file)
-            case str(), _:
-                raise TypeError(f"Metadata.__set_property(property_name, property_value) "
-                                f"property_value should be str (not {type(property_value)})")
-            case _, str():
-                raise TypeError(f"Metadata.__set_property(property_name, property_value) "
-                                f"property_name should be str (not {type(property_name)})")
-            case _, _:
-                raise TypeError(f"Metadata.__set_property(property_name, property_value) "
-                                f"property_name and property_value should be str, str "
-                                f"(not {type(property_name)}, {type(property_value)})")
-
-    def __add_property(self, document_property: WordProperty):
-        app_tags_subsequence = (
-            "Template", "TotalTime", "Pages", "Words", "Characters",
-            "Application", "DocSecurity", "Lines", "Paragraphs",
-            "ScaleCrop", "Company", "LinksUpToDate", "CharactersWithSpaces",
-            "SharedDoc", "HyperlinksChanged", "AppVersion"
-        )
-        core_tags_subsequence = (
-            "title", "subject", "creator", "keywords", "description",
-            "lastModifiedBy", "revision", "created", "modified"
-        )
-        core_tag_prefixes_subsequence = (
-            "dc:", "dc:", "dc:", "cp:", "dc:", "cp:", "cp:", "dcterms:", "dcterms:"
-        )
-
-        match document_property:
-            case WordProperty(property_name=str("creator" | "lastModifiedBy" | "revision" as property_name),
-                              property_value=None):
-                self.__extract_all()
-                root = ElementTree.parse(pathlib.Path(self._temp_folder_path, "docProps", "core.xml")).getroot()
-                new_element = ElementTree.Element(property_name)
-                root.insert(core_tags_subsequence.index(property_name), new_element)
-                self.__pack_all()
-                self.__remove_temp_folder()
-            case WordProperty(property_name=str("creator" | "lastModifiedBy" | "revision" as property_name),
-                              property_value=str(value)):
-                self.__extract_all()
-
-                property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
-
-                root = ElementTree.parse(property_xml_file).getroot()
-
-                prefix = core_tag_prefixes_subsequence[core_tags_subsequence.index(property_name)]
-                new_element = ElementTree.Element(prefix + property_name)
-                new_element.text = value
-
-                root.insert(core_tags_subsequence.index(property_name), new_element)
-
-                ElementTree.ElementTree(root).write(property_xml_file)
-
-                self.__pack_all()
-                self.__remove_temp_folder()
-            case WordProperty(property_name=str("TotalTime" | "Application" as property_name),
-                              property_value=None):
-                self.__extract_all()
-                root = ElementTree.parse(pathlib.Path(self._temp_folder_path, "docProps", "app.xml")).getroot()
-                new_element = ElementTree.Element(property_name)
-                root.insert(app_tags_subsequence.index(property_name), new_element)
-                self.__pack_all()
-                self.__remove_temp_folder()
-            case WordProperty(property_name=str("TotalTime" | "Application" as property_name),
-                              property_value=str(value)):
-
-                self.__extract_all()
-
-                property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
-
-                root = ElementTree.parse(property_xml_file).getroot()
-
-                new_element = ElementTree.Element(property_name)
-                new_element.text = value
-
-                root.insert(app_tags_subsequence.index(property_name), new_element)
-
-                ElementTree.ElementTree(root).write(property_xml_file)
-
-                self.__pack_all()
-                self.__remove_temp_folder()
-            case _:
-                raise TypeError("Metadata.__add_property(document_property) document_property should be WordProperty"
-                                f"(not {type(document_property)})")
-
-    @staticmethod
-    def __register_all_namespaces(filename):
-        namespaces = dict([node for _, node in ElementTree.iterparse(filename, events=['start-ns'])])
-        for ns in namespaces:
-            ElementTree.register_namespace(ns, namespaces[ns])
-
     @property
     def filepath(self) -> pathlib.Path:
         return self.__filepath
@@ -217,7 +289,12 @@ class Metadata:
     @property
     def application_name(self) -> str | None:
         try:
-            return self.__get_property_value("Application")
+            self.__extract_all()
+            property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
+            app = WordAppXml(property_xml_file)
+            application_name = app.application
+            self.__remove_temp_folder()
+            return application_name
         except PropertyNotFoundError:
             return None
 
@@ -225,76 +302,100 @@ class Metadata:
     def application_name(self, value: str):
         match value:
             case str():
-                try:
-                    self.__set_property("Application", value)
-                except PropertyNotFoundError:
-                    self.__add_property(WordProperty("Application", value))
+                self.__extract_all()
+                property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
+                app = WordAppXml(property_xml_file)
+                app.application = value
+                self.__pack_all()
+                self.__remove_temp_folder()
             case _:
                 raise TypeError(f"Metadata.application_name should be str (not {type(value)})")
 
     @property
     def editing_time(self) -> int:
-        return int(self.__get_property_value("TotalTime"))
+        self.__extract_all()
+        property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
+        app = WordAppXml(property_xml_file)
+        editing_time = app.total_time
+        self.__remove_temp_folder()
+        return editing_time
 
     @editing_time.setter
     def editing_time(self, value: int):
         match value:
             case int():
-                self.__set_property("TotalTime", str(value))
+                self.__extract_all()
+                property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
+                app = WordAppXml(property_xml_file)
+                app.total_time = value
+                self.__pack_all()
+                self.__remove_temp_folder()
             case _:
                 raise TypeError(f"Metadata.editing_time should be int (not {type(value)})")
 
     @property
     def creator(self) -> str | None:
-        try:
-            return self.__get_property_value("creator")
-        except PropertyNotFoundError:
-            return None
+        self.__extract_all()
+        property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
+        core = WordCoreXml(property_xml_file)
+        creator = core.creator
+        self.__remove_temp_folder()
+        return creator
 
     @creator.setter
-    def creator(self, value: str):
+    def creator(self, value: str) -> None:
         match value:
             case str():
-                try:
-                    self.__set_property("creator", value)
-                except PropertyNotFoundError:
-                    self.__add_property(WordProperty("creator", value))
+                self.__extract_all()
+                property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
+                core = WordCoreXml(property_xml_file)
+                core.creator = value
+                self.__pack_all()
+                self.__remove_temp_folder()
             case _:
                 raise TypeError(f"Metadata.creator should be str (not {type(value)})")
 
     @property
     def last_modified_by(self) -> str | None:
-        try:
-            return self.__get_property_value("lastModifiedBy")
-        except PropertyNotFoundError:
-            return None
+        self.__extract_all()
+        property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
+        core = WordCoreXml(property_xml_file)
+        last_modified_by = core.last_modified_by
+        self.__remove_temp_folder()
+        return last_modified_by
 
     @last_modified_by.setter
     def last_modified_by(self, value: str):
         match value:
             case str():
-                try:
-                    self.__set_property("lastModifiedBy", value)
-                except PropertyNotFoundError:
-                    self.__add_property(WordProperty("lastModifiedBy", value))
+                self.__extract_all()
+                property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
+                core = WordCoreXml(property_xml_file)
+                core.last_modified_by = value
+                self.__pack_all()
+                self.__remove_temp_folder()
             case _:
                 raise TypeError(f"Metadata.last_modified_by should be str (not {type(value)})")
 
     @property
     def revision(self) -> int | None:
-        try:
-            return int(self.__get_property_value("revision"))
-        except PropertyNotFoundError:
-            return None
+        self.__extract_all()
+        property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
+        core = WordCoreXml(property_xml_file)
+        revision = core.revision
+        self.__remove_temp_folder()
+        return revision
 
     @revision.setter
     def revision(self, value: int):
         match value:
             case int():
-                try:
-                    self.__set_property("revision", str(value))
-                except PropertyNotFoundError:
-                    self.__add_property(WordProperty("revision", str(value)))
+                self.__extract_all()
+                property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
+                core = WordCoreXml(property_xml_file)
+                core.revision = value
+                self.__pack_all()
+                self.__remove_temp_folder()
             case _:
                 raise TypeError(f"Metadata.revision should be int (not {type(value)})")
 
