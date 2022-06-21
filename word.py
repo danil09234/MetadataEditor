@@ -1,7 +1,5 @@
 import zipfile
 import pathlib
-import xml.etree.ElementTree as ElementTree
-import re
 import os
 import shutil
 from typing import NamedTuple, Literal
@@ -122,7 +120,6 @@ class WordCoreXml:
                 core_property_name = f"{self.__get_tag_namespace(property_name)}:{property_name}"
                 try:
                     return core_file.getElementsByTagName(core_property_name)[0].childNodes[0].data
-
                 except IndexError:
                     return None
             case _:
@@ -237,22 +234,30 @@ class WordAppXml:
         match value:
             case str():
                 self.__set_property(WordAppProperty("Application", value))
+            case None:
+                self.__set_property(WordAppProperty("Application", ""))
             case _:
                 raise TypeError("WordAppXml.application should be str"
                                 f'(not {type(value)})')
 
     @property
-    def total_time(self) -> int:
-        return int(self.__get_property("TotalTime"))
+    def total_time(self) -> int | None:
+        total_time = self.__get_property("TotalTime")
+        if total_time is None:
+            return None
+        else:
+            return int(total_time)
 
     @total_time.setter
     def total_time(self, value: int | None) -> None:
         match value:
-            case int() | None:
+            case int():
                 self.__set_property(WordAppProperty("TotalTime", str(value)))
+            case None:
+                self.__set_property(WordAppProperty("TotalTime", ""))
             case _:
                 raise TypeError("WordAppXml.total_time should be int"
-                                f'(not "{type(value)}")')
+                                f'(not {type(value)})')
 
     def __init__(self, xml_file_path: pathlib.Path):
         match xml_file_path:
@@ -260,7 +265,7 @@ class WordAppXml:
                 self.xml_file_path = xml_file_path
             case _:
                 raise TypeError("WordAppXml(xml_file_path) xml_file_path should be pathlib.Path"
-                                f'(not "{type(xml_file_path)}")')
+                                f'(not {type(xml_file_path)})')
 
 
 class Metadata:
@@ -299,7 +304,7 @@ class Metadata:
             return None
 
     @application_name.setter
-    def application_name(self, value: str):
+    def application_name(self, value: str) -> None:
         match value:
             case str():
                 self.__extract_all()
