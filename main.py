@@ -118,12 +118,34 @@ def change_editing_time(file: pathlib.Path, new_editing_time: str):
         click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
 
 
+@click.command()
+@click.argument("file", type=pathlib.Path)
+def new(file: pathlib.Path):
+    if file.exists() is False:
+        click.echo(click.style(f"File {file} was not found.", fg="red"))
+        return
+    if file.suffix == ".docx":
+        word_file_metadata = word.Metadata(file)
+
+        word_file_metadata.editing_time = 0
+        word_file_metadata.revision = 1
+        word_file_metadata.creator = "admin"
+        word_file_metadata.last_modified_by = "admin"
+        word_file_metadata.application_name = "Microsoft Office Word"
+
+        click.secho("Success.", fg="green")
+    else:
+        click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
+
+
 main.add_command(get_metadata)
 main.add_command(change_creator)
 main.add_command(change_modifier)
 main.add_command(change_revision)
 main.add_command(change_application)
 main.add_command(change_editing_time)
+main.add_command(new)
+
 
 if __name__ == "__main__":
     main()
