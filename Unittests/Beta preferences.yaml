@@ -1,0 +1,24 @@
+# Preferences for command "new"
+new:
+   creator: admin
+   last modified by: admin
+   application: Microsoft Office Word
+   editing time: 0
+   revision: 1
+
+# Preferences for command "privet_smirnovoy"
+# Will randomly be selected configured number of creators and modifiers & random application from applications list
+privet_smirnovoy:
+   applications:
+       - Minecraft
+       - Calculator
+       - Excel
+   creators:
+       - User 1
+       - User 2
+       - User 3
+   modifiers:
+       - User 1
+       - User 2
+   creators number: 2
+   modifiers number: 1
