@@ -108,7 +108,7 @@ class PrivetSmirnovoyPreference:
     @property
     def random_creators_list(self) -> list:
         unique_creators = list(unique(self.creators))
-        if len(unique_creators) < self.creators_number:
+        if len(unique_creators) > self.creators_number:
             result = []
             for _ in range(self.creators_number):
                 random_creator = random.choice(unique_creators)
@@ -136,7 +136,7 @@ class PrivetSmirnovoyPreference:
     @property
     def random_modifiers_list(self) -> list:
         unique_modifiers = list(unique(self.modifiers))
-        if len(unique_modifiers) < self.modifiers_number:
+        if len(unique_modifiers) > self.modifiers_number:
             result = []
             for _ in range(self.modifiers_number):
                 random_modifiers = random.choice(unique_modifiers)
