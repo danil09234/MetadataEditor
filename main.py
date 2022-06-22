@@ -1,6 +1,15 @@
 import word
 import pathlib
 import click
+import preferences
+
+
+# Constants
+DEFAULT_WORD_EDITING_TIME = 0
+DEFAULT_WORD_REVISION = 1
+DEFAULT_WORD_CREATOR = "admin"
+DEFAULT_WORD_LAST_MODIFIED_BY = "admin"
+DEFAULT_WORD_APPLICATION_NAME = "Microsoft Office Word"
 
 
 @click.group()
@@ -126,14 +135,54 @@ def new(file: pathlib.Path):
         return
     if file.suffix == ".docx":
         word_file_metadata = word.Metadata(file)
+        new_command_preferences = preferences.NewCommandPreferences(pathlib.Path("preferences.yaml"))
 
-        word_file_metadata.editing_time = 0
-        word_file_metadata.revision = 1
-        word_file_metadata.creator = "admin"
-        word_file_metadata.last_modified_by = "admin"
-        word_file_metadata.application_name = "Microsoft Office Word"
+        completed_with_errors = False
+        try:
+            word_file_metadata.editing_time = new_command_preferences.editing_time
+        except preferences.PreferenceNotFoundError:
+            word_file_metadata.editing_time = DEFAULT_WORD_EDITING_TIME
+            click.secho('Preference for "editing time" not found. '
+                        f'Default value "{DEFAULT_WORD_EDITING_TIME}" used.', fg="red")
+            completed_with_errors = True
 
-        click.secho("Success.", fg="green")
+        try:
+            word_file_metadata.revision = new_command_preferences.revision
+        except preferences.PreferenceNotFoundError:
+            word_file_metadata.revision = DEFAULT_WORD_REVISION
+            click.secho('Preference for "revision" not found. '
+                        f'Default value "{DEFAULT_WORD_REVISION}" used.', fg="red")
+            completed_with_errors = True
+
+        try:
+            word_file_metadata.creator = new_command_preferences.creator
+        except preferences.PreferenceNotFoundError:
+            word_file_metadata.creator = DEFAULT_WORD_CREATOR
+            click.secho('Preference for "creator" not found. '
+                        f'Default value "{DEFAULT_WORD_CREATOR}" used.', fg="red")
+            completed_with_errors = True
+
+        try:
+            word_file_metadata.last_modified_by = new_command_preferences.last_modified_by
+        except preferences.PreferenceNotFoundError:
+            word_file_metadata.last_modified_by = "admin"
+            click.secho('Preference for "last modified by" not found. '
+                        f'Default value "{DEFAULT_WORD_LAST_MODIFIED_BY}" used.', fg="red")
+            completed_with_errors = True
+
+        try:
+            word_file_metadata.application_name = new_command_preferences.application
+        except preferences.PreferenceNotFoundError:
+            word_file_metadata.application_name = DEFAULT_WORD_APPLICATION_NAME
+            click.secho('Preference for "application name" not found. '
+                        f'Default value "{DEFAULT_WORD_APPLICATION_NAME}" used.', fg="red")
+            completed_with_errors = True
+
+        if completed_with_errors:
+            click.secho("Completed with errors.", fg="yellow")
+            click.secho("Please, check preferences.yaml", fg="yellow")
+        else:
+            click.secho("Success.", fg="green")
     else:
         click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
 
