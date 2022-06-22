@@ -187,6 +187,68 @@ def new(file: pathlib.Path):
         click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
 
 
+@click.command()
+@click.argument("file", type=pathlib.Path)
+def privet_smirnovoy(file: pathlib.Path):
+    if file.exists() is False:
+        click.echo(click.style(f"File {file} was not found.", fg="red"))
+        return
+    if file.suffix == ".docx":
+        word_file_metadata = word.Metadata(file)
+        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference(pathlib.Path("preferences.yaml"))
+
+        completed_with_errors = False
+        word_file_metadata.editing_time = 525600
+        word_file_metadata.revision = 9999999
+
+        try:
+            creators_string = ""
+            random_creators_list = privet_smirnovoy_preferences.random_creators_list
+            for index, creator in enumerate(random_creators_list):
+                creators_string += creator
+                if index != len(random_creators_list) - 1:
+                    creators_string += "; "
+
+            word_file_metadata.creator = creators_string
+        except preferences.PreferenceNotFoundError:
+            click.secho('Preference for "creator" not found.', fg="red")
+            completed_with_errors = True
+        except preferences.InvalidPreferenceValue:
+            click.secho('Preference "creators number" is invalid. Maybe too big?', fg="red")
+            completed_with_errors = True
+
+        try:
+            modifiers_string = ""
+            random_modifiers_list = privet_smirnovoy_preferences.random_modifiers_list
+            for index, modifier in enumerate(random_modifiers_list):
+                modifiers_string += modifier
+                if index != len(random_modifiers_list) - 1:
+                    modifiers_string += "; "
+
+            word_file_metadata.last_modified_by = modifiers_string
+        except preferences.PreferenceNotFoundError:
+            click.secho('Preference for "last modified by" not found.', fg="red")
+            completed_with_errors = True
+        except preferences.InvalidPreferenceValue:
+            click.secho('Preference "modifiers number" is invalid. Maybe too big?', fg="red")
+            completed_with_errors = True
+
+        try:
+            word_file_metadata.application_name = privet_smirnovoy_preferences.random_application
+        except preferences.PreferenceNotFoundError:
+            word_file_metadata.application_name = DEFAULT_WORD_APPLICATION_NAME
+            click.secho('Preference for "application name" not found. ', fg="red")
+            completed_with_errors = True
+
+        if completed_with_errors:
+            click.secho("Completed with errors.", fg="yellow")
+            click.secho("Please, check preferences.yaml", fg="yellow")
+        else:
+            click.secho("Success.", fg="green")
+    else:
+        click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
+
+
 main.add_command(get_metadata)
 main.add_command(change_creator)
 main.add_command(change_modifier)
@@ -194,6 +256,7 @@ main.add_command(change_revision)
 main.add_command(change_application)
 main.add_command(change_editing_time)
 main.add_command(new)
+main.add_command(privet_smirnovoy)
 
 
 if __name__ == "__main__":
