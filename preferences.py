@@ -8,7 +8,7 @@ class PreferenceNotFoundError(Exception):
     pass
 
 
-class InvalidPreferenceValue(Exception):
+class InvalidPreferenceValueError(Exception):
     pass
 
 
@@ -118,7 +118,17 @@ class PrivetSmirnovoyPreference:
         elif len(unique_creators) == self.creators_number:
             return self.creators
         else:
-            raise InvalidPreferenceValue
+            raise InvalidPreferenceValueError
+
+    @property
+    def random_creators_string(self):
+        creators_string = ""
+        random_creators_list = self.random_creators_list
+        for index, creator in enumerate(random_creators_list):
+            creators_string += creator
+            if index != len(random_creators_list) - 1:
+                creators_string += "; "
+        return creators_string
 
     @property
     def modifiers(self) -> list:
@@ -146,7 +156,17 @@ class PrivetSmirnovoyPreference:
         elif len(unique_modifiers) == self.modifiers_number:
             return self.modifiers
         else:
-            raise InvalidPreferenceValue
+            raise InvalidPreferenceValueError
+
+    @property
+    def random_modifiers_string(self) -> str:
+        modifiers_string = ""
+        random_modifiers_list = self.random_modifiers_list
+        for index, modifier in enumerate(random_modifiers_list):
+            modifiers_string += modifier
+            if index != len(random_modifiers_list) - 1:
+                modifiers_string += "; "
+        return modifiers_string
 
     @property
     def creators_number(self) -> int:
