@@ -1,0 +1,175 @@
+#:import FadeTransition kivy.uix.screenmanager.FadeTransition
+#:import utils kivy.utils
+
+<ScreenManagement>:
+    transition: FadeTransition()
+    MainUi:
+        name: "Antismirnova"
+
+<CustomLabel@Label>:
+    -background_color: 0, 0, 0, 0
+    -radius_top_left: 0
+    -radius_top_right: 0
+    -radius_bottom_right: 0
+    -radius_bottom_left: 0
+    text_size: self.size[0]-10, self.size[1]
+    halign: "right"
+    valign: "middle"
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: root.radius_top_left, root.radius_top_right, root.radius_bottom_right, root.radius_bottom_left
+
+<CustomTextInput@AnchorLayout>:
+    -text: custom_text_input.text
+    -background_color: 0, 0, 0, 0
+    -foreground_color: "white"
+    -radius_top_left: 0
+    -radius_top_right: 0
+    -radius_bottom_right: 0
+    -radius_bottom_left: 0
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: root.radius_top_left, root.radius_top_right, root.radius_bottom_right, root.radius_bottom_left
+    TextInput:
+        id: custom_text_input
+        background_color: 0, 0, 0, 0
+        size: self.parent.size[0], 30
+        size_hint: 1, None
+        use_bubble: False
+        multiline: False
+        write_tab: False
+        line_height: self.size[1]
+        foreground_color: root.foreground_color
+
+<CustomButton>:
+    -background_color: 0, 0, 0, 0
+    -text: ""
+    -color: "black"
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        RoundedRectangle:
+            group: "button_background"
+            size: self.size
+            pos: self.pos
+    Button:
+        id: button
+        background_color: 0, 0, 0, 0
+        text: root.text
+        color: root.color
+        on_press:
+            root.on_press_animation()
+
+<MainUi>:
+    canvas.before:
+        Color:
+            rgb: 255, 255, 255
+        Rectangle:
+            size: self.size
+    GridLayout:
+        rows: 2
+        GridLayout:
+            cols: 2
+            AnchorLayout:
+                padding: 50, 50, 25, 25
+                size_hint: .6, 1
+                Label:
+                    id: test
+                    text: "Drag & drop your file here"
+                    color: "black"
+                    canvas.before:
+                        Color:
+                            rgba: 255, 255, 0, .5
+                        RoundedRectangle:
+                            size: self.size
+                            pos: self.pos
+            AnchorLayout:
+                padding: 25, 50, 50, 25
+                size_hint: .4, 1
+                GridLayout:
+                    rows: 2
+                    padding: 10, 10, 10, 10
+                    spacing: 5
+                    canvas.before:
+                        Color:
+                            rgba: 255, 255, 0, .5
+                        RoundedRectangle:
+                            size: self.size
+                            pos: self.pos
+                    CustomButton:
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        text: "Reset metadata"
+                    CustomButton:
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        text: "Send hello to Smivnova"
+        AnchorLayout:
+            padding: 50, 25, 50, 50
+            GridLayout:
+                cols: 2
+                spacing: 5
+                padding: 5, 5, 5, 5
+                canvas.before:
+                    Color:
+                        rgba: 255, 255, 0, .5
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: 5
+                    size_hint: .3, 1
+                    CustomLabel:
+                        text: "Creator:"
+                        radius_top_left: 10
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        color: "black"
+                    CustomLabel:
+                        text: "Last modified by:"
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        color: "black"
+                    CustomLabel:
+                        text: "Revision:"
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        color: "black"
+                    CustomLabel:
+                        text: "Application:"
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        color: "black"
+                    CustomLabel:
+                        text: "Editing time:"
+                        radius_bottom_left: 10
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        color: "black"
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: 5
+                    CustomTextInput:
+                        background_color: 0, 0, 255, 1
+                        radius_top_right: 10
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        foreground_color: "black"
+                    CustomTextInput:
+                        background_color: 0, 0, 255, 1
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        foreground_color: "black"
+                    CustomTextInput:
+                        background_color: 0, 0, 255, 1
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        foreground_color: "black"
+                    CustomTextInput:
+                        background_color: 0, 0, 255, 1
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        foreground_color: "black"
+                    CustomTextInput:
+                        background_color: 0, 0, 255, 1
+                        radius_bottom_right: 10
+                        background_color: utils.get_color_from_hex("5ec6ff")
+                        foreground_color: "black"
