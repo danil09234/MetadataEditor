@@ -2,7 +2,7 @@ import word
 import pathlib
 import click
 import preferences
-
+import logging
 
 # Constants
 PREFERENCES_FILEPATH = pathlib.Path("preferences.yaml")
@@ -280,6 +280,13 @@ def privet_smirnovoy(file: pathlib.Path):
         click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
 
 
+@click.command()
+def open_gui():
+    logging.disable(logging.CRITICAL)
+    import gui
+    gui.AntismirnovaApp().run()
+
+
 main.add_command(get_metadata)
 main.add_command(change_creator)
 main.add_command(change_modifier)
@@ -288,6 +295,7 @@ main.add_command(change_application)
 main.add_command(change_editing_time)
 main.add_command(new)
 main.add_command(privet_smirnovoy)
+main.add_command(open_gui)
 
 
 if __name__ == "__main__":
