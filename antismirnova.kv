@@ -1,5 +1,6 @@
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 #:import utils kivy.utils
+#:import Animation kivy.animation.Animation
 
 <ScreenManagement>:
     transition: FadeTransition()
@@ -49,24 +50,30 @@
         line_height: self.size[1]
         foreground_color: root.foreground_color
 
-<CustomButton>:
-    -background_color: 0, 0, 0, 0
-    -text: ""
-    -color: "black"
+<CustomButton@ButtonBehavior+Label>:
+    -canvas_color: 0, 0, 0, 0
     canvas.before:
         Color:
-            rgba: root.background_color
+            rgba: root.canvas_color
         RoundedRectangle:
             group: "button_background"
             size: self.size
             pos: self.pos
-    Button:
-        id: button
-        background_color: 0, 0, 0, 0
-        text: root.text
-        color: root.color
-        on_press:
-            root.on_press_animation()
+    on_press:
+        default_size = self.size
+        animation_size = (self.size[0]*0.98, self.size[1]*0.98)
+
+        default_pos = self.pos
+        animation_pos = (self.pos[0]+(default_size[0]-animation_size[0])/2, self.pos[1]+(default_size[1]-animation_size[1])/2)
+
+        animation = Animation(size=animation_size, duration=0.1)
+        animation += Animation(size=default_size, duration=0.1)
+
+        animation1 = Animation(pos=animation_pos, duration=0.1)
+        animation1 += Animation(pos=default_pos, duration=0.1)
+
+        animation.start(self.canvas.before.get_group("button_background")[0])
+        animation1.start(self.canvas.before.get_group("button_background")[0])
 
 <MainUi>:
     canvas.before:
@@ -105,10 +112,10 @@
                             size: self.size
                             pos: self.pos
                     CustomButton:
-                        background_color: utils.get_color_from_hex("5ec6ff")
+                        canvas_color: utils.get_color_from_hex("5ec6ff")
                         text: "Reset metadata"
                     CustomButton:
-                        background_color: utils.get_color_from_hex("5ec6ff")
+                        canvas_color: utils.get_color_from_hex("5ec6ff")
                         text: "Send hello to Smivnova"
         AnchorLayout:
             padding: 50, 25, 50, 50

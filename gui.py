@@ -5,31 +5,7 @@ from kivy.resources import resource_add_path, resource_find
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.screenmanager import Screen
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.core.window import Window
-from kivy.animation import Animation
-
-
-class CustomButton(AnchorLayout):
-    def on_press_animation(self):
-        default_size = self.ids.button.size
-        animation_size = (self.ids.button.size[0]*0.98, self.ids.button.size[1]*0.98)
-
-        default_pos = self.ids.button.pos
-        animation_pos = (self.ids.button.pos[0]+(default_size[0]-animation_size[0])/2,
-                         self.ids.button.pos[1]+(default_size[1]-animation_size[1])/2)
-
-        animation = Animation(size=animation_size, duration=0.1)
-        animation += Animation(size=default_size, duration=0.1)
-
-        animation1 = Animation(pos=animation_pos, duration=0.1)
-        animation1 += Animation(pos=default_pos, duration=0.1)
-
-        animation.start(self.canvas.before.get_group("button_background")[0])
-        animation1.start(self.canvas.before.get_group("button_background")[0])
-
-    def __init__(self, **kwargs):
-        super(CustomButton, self).__init__(**kwargs)
 
 
 class ScreenManagement(ScreenManager):
