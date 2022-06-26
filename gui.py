@@ -1,3 +1,4 @@
+import pathlib
 import sys
 import os
 
@@ -6,6 +7,35 @@ from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.screenmanager import Screen
 from kivy.core.window import Window
+from kivy.uix.textinput import TextInput
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.properties import VariableListProperty
+
+
+class CustomTextInput(AnchorLayout):
+    bg_color = VariableListProperty([0, 0, 0, 0])
+    radius = VariableListProperty([0, 0, 0, 0])
+
+    @property
+    def text(self):
+        return self.__text_input.text
+
+    @text.setter
+    def text(self, value):
+        self.__text_input.text = value
+
+    def __init__(self, **kwargs):
+        super(CustomTextInput, self).__init__(**kwargs)
+
+        self.__text_input = TextInput(
+            background_color=(0, 0, 0, 0),
+            size_hint=(1, None),
+            size=(self.size[0], 30),
+            multiline=False,
+            write_tab=False
+        )
+
+        self.add_widget(self.__text_input)
 
 
 class ScreenManagement(ScreenManager):

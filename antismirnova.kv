@@ -24,32 +24,6 @@
             pos: self.pos
             radius: root.radius_top_left, root.radius_top_right, root.radius_bottom_right, root.radius_bottom_left
 
-<CustomTextInput@AnchorLayout>:
-    -text: custom_text_input.text
-    -background_color: 0, 0, 0, 0
-    -foreground_color: "white"
-    -radius_top_left: 0
-    -radius_top_right: 0
-    -radius_bottom_right: 0
-    -radius_bottom_left: 0
-    canvas.before:
-        Color:
-            rgba: root.background_color
-        RoundedRectangle:
-            size: self.size
-            pos: self.pos
-            radius: root.radius_top_left, root.radius_top_right, root.radius_bottom_right, root.radius_bottom_left
-    TextInput:
-        id: custom_text_input
-        background_color: 0, 0, 0, 0
-        size: self.parent.size[0], 30
-        size_hint: 1, None
-        use_bubble: False
-        multiline: False
-        write_tab: False
-        line_height: self.size[1]
-        foreground_color: root.foreground_color
-
 <CustomButton@ButtonBehavior+Label>:
     -canvas_color: 0, 0, 0, 0
     canvas.before:
@@ -74,6 +48,15 @@
 
         animation.start(self.canvas.before.get_group("button_background")[0])
         animation1.start(self.canvas.before.get_group("button_background")[0])
+
+<CustomTextInput>:
+    canvas.before:
+        Color:
+            rgba: root.bg_color
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: self.radius
 
 <MainUi>:
     canvas.before:
@@ -159,24 +142,19 @@
                     orientation: "vertical"
                     spacing: 5
                     CustomTextInput:
-                        background_color: 0, 0, 255, 1
-                        radius_top_right: 10
-                        background_color: utils.get_color_from_hex("5ec6ff")
-                        foreground_color: "black"
+                        id: creator_text_input
+                        bg_color: utils.get_color_from_hex("5ec6ff")
+                        radius: 0, 10, 0, 0
                     CustomTextInput:
-                        background_color: 0, 0, 255, 1
-                        background_color: utils.get_color_from_hex("5ec6ff")
-                        foreground_color: "black"
+                        id: last_modified_by_text_input
+                        bg_color: utils.get_color_from_hex("5ec6ff")
                     CustomTextInput:
-                        background_color: 0, 0, 255, 1
-                        background_color: utils.get_color_from_hex("5ec6ff")
-                        foreground_color: "black"
+                        id: revision_text_input
+                        bg_color: utils.get_color_from_hex("5ec6ff")
                     CustomTextInput:
-                        background_color: 0, 0, 255, 1
-                        background_color: utils.get_color_from_hex("5ec6ff")
-                        foreground_color: "black"
+                        id: application_text_input
+                        bg_color: utils.get_color_from_hex("5ec6ff")
                     CustomTextInput:
-                        background_color: 0, 0, 255, 1
-                        radius_bottom_right: 10
-                        background_color: utils.get_color_from_hex("5ec6ff")
-                        foreground_color: "black"
+                        id: editing_time_text_input
+                        bg_color: utils.get_color_from_hex("5ec6ff")
+                        radius: 0, 0, 10, 0
