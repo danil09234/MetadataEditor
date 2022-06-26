@@ -72,13 +72,15 @@
                 padding: 50, 50, 25, 25
                 size_hint: .6, 1
                 Label:
-                    id: test
+                    id: drag_and_drop_label
                     text: "Drag & drop your file here"
                     color: "black"
                     canvas.before:
                         Color:
+                            group: "color"
                             rgba: 255, 255, 0, .5
                         RoundedRectangle:
+                            group: "rounded_rectangle"
                             size: self.size
                             pos: self.pos
             AnchorLayout:
