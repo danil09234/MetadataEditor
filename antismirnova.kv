@@ -1,6 +1,7 @@
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 #:import utils kivy.utils
 #:import Animation kivy.animation.Animation
+#:import label_text_wrap gui.label_text_wrap
 
 <ScreenManagement>:
     transition: FadeTransition()
@@ -58,36 +59,82 @@
             pos: self.pos
             radius: self.radius
 
+<FileDragAndDropperStateLabel>:
+    canvas.before:
+        Color:
+            group: "bg_color"
+            rgba: root.bg_color
+        RoundedRectangle:
+            group: "background"
+            size: self.size
+            pos: self.pos
+    Label:
+        id: drag_and_drop_label
+        size_hint: (1, 1)
+        text: root.drag_and_drop_label_text
+        color: "black"
+
+<FileDragAndDropperStateInfo>:
+    canvas.before:
+        Color:
+            rgba: root.bg_color
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+    spacing: 10
+    padding: 10, 10, 10, 10
+    Image:
+        source: root.image_source
+        size_hint: .5, .8
+        pos_hint: {"center_x": .5, "center_y": .5}
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        Label:
+            id: info_label
+            multiline: True
+            halign: "center"
+            valign: "middle"
+            size_hint: (1, 1)
+            text: label_text_wrap(root.info_label_text, self.width, self)
+            color: "black"
+        Label:
+            id: drag_and_drop_label
+            canvas.before:
+                Color:
+                    group: "bg_color"
+                    rgba: root.drag_and_drop_label_bg_color
+                RoundedRectangle:
+                    group: "background"
+                    size: self.size
+                    pos: self.pos
+            size_hint: (1, 1)
+            text: root.drag_and_drop_label_text
+            color: "black"
+
 <MainUi>:
     canvas.before:
         Color:
             rgb: 255, 255, 255
         Rectangle:
             size: self.size
-    GridLayout:
-        rows: 2
-        GridLayout:
-            cols: 2
-            AnchorLayout:
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            orientation: "horizontal"
+            FileDragAndDropper:
                 padding: 50, 50, 25, 25
                 size_hint: .6, 1
-                Label:
-                    id: drag_and_drop_label
-                    text: "Drag & drop your file here"
-                    color: "black"
-                    canvas.before:
-                        Color:
-                            group: "color"
-                            rgba: 255, 255, 0, .5
-                        RoundedRectangle:
-                            group: "rounded_rectangle"
-                            size: self.size
-                            pos: self.pos
+                creator_text_input: creator_text_input
+                last_modified_by_text_input: last_modified_by_text_input
+                revision_text_input: revision_text_input
+                application_text_input: application_text_input
+                editing_time_text_input: editing_time_text_input
             AnchorLayout:
                 padding: 25, 50, 50, 25
                 size_hint: .4, 1
-                GridLayout:
-                    rows: 2
+                BoxLayout:
+                    orientation: "vertical"
                     padding: 10, 10, 10, 10
                     spacing: 5
                     canvas.before:
@@ -99,9 +146,15 @@
                     CustomButton:
                         canvas_color: utils.get_color_from_hex("5ec6ff")
                         text: "Reset metadata"
+                        color: "black"
                     CustomButton:
                         canvas_color: utils.get_color_from_hex("5ec6ff")
                         text: "Send hello to Smivnova"
+                        color: "black"
+                    CustomButton:
+                        canvas_color: utils.get_color_from_hex("5ec6ff")
+                        text: "Save"
+                        color: "black"
         AnchorLayout:
             padding: 50, 25, 50, 50
             GridLayout:
