@@ -19,7 +19,7 @@
     valign: "middle"
     canvas.before:
         Color:
-            rgba: root.background_color
+            rgba: self.background_color
         RoundedRectangle:
             size: self.size
             pos: self.pos
@@ -29,7 +29,7 @@
     -canvas_color: 0, 0, 0, 0
     canvas.before:
         Color:
-            rgba: root.canvas_color
+            rgba: (root.canvas_color if not self.disabled else self.background_disabled_normal)
         RoundedRectangle:
             group: "button_background"
             size: self.size
@@ -53,7 +53,7 @@
 <CustomTextInput>:
     canvas.before:
         Color:
-            rgba: root.bg_color
+            rgba: (root.bg_color if not self.disabled else self.background_disabled_normal)
         RoundedRectangle:
             size: self.size
             pos: self.pos
@@ -123,6 +123,7 @@
         BoxLayout:
             orientation: "horizontal"
             FileDragAndDropper:
+                id: file_drag_and_dropper
                 padding: 50, 50, 25, 25
                 size_hint: .6, 1
                 creator_text_input: creator_text_input
@@ -130,6 +131,10 @@
                 revision_text_input: revision_text_input
                 application_text_input: application_text_input
                 editing_time_text_input: editing_time_text_input
+
+                reset_button: reset_button
+                send_hello_button: send_hello_button
+                save_button: save_button
             AnchorLayout:
                 padding: 25, 50, 50, 25
                 size_hint: .4, 1
@@ -144,17 +149,31 @@
                             size: self.size
                             pos: self.pos
                     CustomButton:
+                        id: reset_button
                         canvas_color: utils.get_color_from_hex("5ec6ff")
                         text: "Reset metadata"
                         color: "black"
+                        background_disabled_normal: utils.get_color_from_hex("beccd4")
+                        disabled_color: "grey"
+                        disabled: True
                     CustomButton:
+                        id: send_hello_button
                         canvas_color: utils.get_color_from_hex("5ec6ff")
                         text: "Send hello to Smivnova"
                         color: "black"
+                        background_disabled_normal: utils.get_color_from_hex("beccd4")
+                        disabled_color: "grey"
+                        disabled: True
                     CustomButton:
+                        id: save_button
                         canvas_color: utils.get_color_from_hex("5ec6ff")
                         text: "Save"
                         color: "black"
+                        background_disabled_normal: utils.get_color_from_hex("beccd4")
+                        disabled_color: "grey"
+                        disabled: True
+                        on_press:
+                            root.save_changes()
         AnchorLayout:
             padding: 50, 25, 50, 50
             GridLayout:
@@ -200,16 +219,33 @@
                         id: creator_text_input
                         bg_color: utils.get_color_from_hex("5ec6ff")
                         radius: 0, 10, 0, 0
+                        disabled: True
+                        background_disabled_normal: utils.get_color_from_hex("beccd4")
+                        text_changed_function: lambda *_: root.text_input_text_updated()
                     CustomTextInput:
                         id: last_modified_by_text_input
                         bg_color: utils.get_color_from_hex("5ec6ff")
+                        disabled: True
+                        background_disabled_normal: utils.get_color_from_hex("beccd4")
+                        text_changed_function: lambda *_: root.text_input_text_updated()
                     CustomTextInput:
                         id: revision_text_input
                         bg_color: utils.get_color_from_hex("5ec6ff")
+                        disabled: True
+                        background_disabled_normal: utils.get_color_from_hex("beccd4")
+                        input_filter: "int"
+                        text_changed_function: lambda *_: root.text_input_text_updated()
                     CustomTextInput:
                         id: application_text_input
                         bg_color: utils.get_color_from_hex("5ec6ff")
+                        disabled: True
+                        background_disabled_normal: utils.get_color_from_hex("beccd4")
+                        text_changed_function: lambda *_: root.text_input_text_updated()
                     CustomTextInput:
                         id: editing_time_text_input
                         bg_color: utils.get_color_from_hex("5ec6ff")
                         radius: 0, 0, 10, 0
+                        disabled: True
+                        background_disabled_normal: utils.get_color_from_hex("beccd4")
+                        input_filter: "int"
+                        text_changed_function: lambda *_: root.text_input_text_updated()

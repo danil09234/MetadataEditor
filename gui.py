@@ -1,25 +1,19 @@
 import pathlib
 import sys
 import os
-import time
-from typing import NamedTuple
 
 from kivy import utils, Config
 from kivy.clock import Clock
-from kivy.graphics import RoundedRectangle, Color
 from kivy.resources import resource_add_path, resource_find
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.image import Image
-from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.screenmanager import Screen
 from kivy.core.window import Window
 from kivy.animation import Animation
 from kivy.uix.textinput import TextInput
 from kivy.uix.anchorlayout import AnchorLayout
-from kivy.properties import VariableListProperty, StringProperty, AliasProperty
+from kivy.properties import VariableListProperty, StringProperty, ObjectProperty
 
 from textwrap import wrap
 
@@ -164,6 +158,11 @@ class FileDragAndDropper(BoxLayout):
         self.revision_text_input = None
         self.application_text_input = None
         self.editing_time_text_input = None
+        self.default_text_input_values = {}
+
+        self.reset_button = None
+        self.send_hello_button = None
+        self.save_button = None
 
         super(FileDragAndDropper, self).__init__(**kwargs)
 
@@ -259,6 +258,9 @@ class FileDragAndDropper(BoxLayout):
             self.invalid_file_animation()
             return
 
+        if self.current_working_file == file:
+            return
+
         self.current_working_file = file
         metadata = word.Metadata(self.current_working_file)
 
@@ -267,32 +269,48 @@ class FileDragAndDropper(BoxLayout):
                 self.creator_text_input.text = creator
             else:
                 self.creator_text_input.text = ""
+            self.default_text_input_values.update({"creator": creator})
 
         if self.last_modified_by_text_input is not None:
             if (last_modified_by := metadata.last_modified_by) is not None:
                 self.last_modified_by_text_input.text = last_modified_by
             else:
                 self.last_modified_by_text_input.text = ""
+            self.default_text_input_values.update({"last_modified_by": last_modified_by})
 
         if self.revision_text_input is not None:
             if (revision := metadata.revision) is not None:
                 self.revision_text_input.text = str(revision)
             else:
                 self.revision_text_input.text = ""
+            self.default_text_input_values.update({"revision": revision})
 
         if self.application_text_input is not None:
             if (application_name := metadata.application_name) is not None:
                 self.application_text_input.text = application_name
             else:
                 self.application_text_input.text = ""
+            self.default_text_input_values.update({"application_name": application_name})
 
         if self.editing_time_text_input is not None:
             if (editing_time := metadata.editing_time) is not None:
                 self.editing_time_text_input.text = str(editing_time)
             else:
                 self.editing_time_text_input.text = ""
+            self.default_text_input_values.update({"editing_time": editing_time})
 
         self.initialize_word_file_animation()
+
+        if self.reset_button is not None:
+            self.reset_button.disabled = False
+        if self.send_hello_button is not None:
+            self.send_hello_button.disabled = False
+
+        self.creator_text_input.disabled = False
+        self.last_modified_by_text_input.disabled = False
+        self.revision_text_input.disabled = False
+        self.application_text_input.disabled = False
+        self.editing_time_text_input.disabled = False
 
     def _on_file_drop(self, window, file_path, x, y):
         if window.children[0].current != "Antismirnova":
@@ -311,6 +329,8 @@ class FileDragAndDropper(BoxLayout):
 class CustomTextInput(AnchorLayout):
     bg_color = VariableListProperty([0, 0, 0, 0])
     radius = VariableListProperty([0, 0, 0, 0])
+    input_filter = ObjectProperty(None)
+    text_changed_function = ObjectProperty(lambda obj, text: None)
 
     @property
     def text(self):
@@ -320,6 +340,13 @@ class CustomTextInput(AnchorLayout):
     def text(self, value):
         self.__text_input.text = value
 
+    def text_updated(self, *args):
+        self.text_changed_function(*args)
+
+    @staticmethod
+    def change_input_filter(instance, value):
+        instance.__text_input.input_filter = value
+
     def __init__(self, **kwargs):
         super(CustomTextInput, self).__init__(**kwargs)
 
@@ -328,8 +355,11 @@ class CustomTextInput(AnchorLayout):
             size_hint=(1, None),
             size=(self.size[0], 30),
             multiline=False,
-            write_tab=False
+            write_tab=False,
+            input_filter=self.input_filter
         )
+        self.__text_input.bind(text=self.text_updated)
+        self.bind(input_filter=self.change_input_filter)
 
         self.add_widget(self.__text_input)
 
@@ -340,6 +370,87 @@ class ScreenManagement(ScreenManager):
 
 
 class MainUi(Screen):
+    def get_changes_dict(self) -> dict:
+        default_values = self.ids.file_drag_and_dropper.default_text_input_values
+
+        changes = {}
+        try:
+            if default_values["creator"] != self.ids.creator_text_input.text:
+                changes.update({"creator": self.ids.creator_text_input.text})
+            elif default_values["last_modified_by"] != self.ids.last_modified_by_text_input.text:
+                changes.update({"last_modified_by": self.ids.last_modified_by_text_input.text})
+            elif str(default_values["revision"]) != (revision := self.ids.revision_text_input.text):
+                if revision == "":
+                    changes.update({"revision": None})
+                else:
+                    changes.update({"revision": int(self.ids.revision_text_input.text)})
+            elif default_values["application_name"] != self.ids.application_text_input.text:
+                changes.update({"application_name": self.ids.application_text_input.text})
+            elif str(default_values["editing_time"]) != (editing_time := self.ids.editing_time_text_input.text):
+                if editing_time == "":
+                    changes.update({editing_time: None})
+                else:
+                    changes.update({"editing_time": int(self.ids.editing_time_text_input.text)})
+        except KeyError:
+            pass
+        return changes
+
+    def check_values_for_difference(self):
+        default_values = self.ids.file_drag_and_dropper.default_text_input_values
+
+        if len(self.get_changes_dict()) != 0:
+            self.ids.save_button.disabled = False
+        else:
+            self.ids.save_button.disabled = True
+
+    def text_input_text_updated(self) -> None:
+        self.check_values_for_difference()
+
+    def save_changes(self):
+        if (current_file := self.ids.file_drag_and_dropper.current_working_file) is None:
+            return
+
+        metadata = word.Metadata(current_file)
+
+        if (changes_dict := self.get_changes_dict()) == {}:
+            return
+
+        for key, value in changes_dict.items():
+            match key, value:
+                case "creator", str():
+                    metadata.creator = value
+                    self.ids.file_drag_and_dropper.default_text_input_values["creator"] = value
+                case "creator", None:
+                    metadata.creator = ""
+                    self.ids.file_drag_and_dropper.default_text_input_values["creator"] = None
+                case "last_modified_by", str():
+                    metadata.last_modified_by = value
+                    self.ids.file_drag_and_dropper.default_text_input_values["last_modified_by"] = value
+                case "last_modified_by", None:
+                    metadata.last_modified_by = ""
+                    self.ids.file_drag_and_dropper.default_text_input_values["last_modified_by"] = None
+                case "revision", int():
+                    metadata.revision = value
+                    self.ids.file_drag_and_dropper.default_text_input_values["revision"] = value
+                case "revision", None:
+                    metadata.revision = 1
+                    self.ids.file_drag_and_dropper.editing_time_text_input.text = "1"
+                    self.ids.file_drag_and_dropper.default_text_input_values["revision"] = 1
+                case "application_name", str():
+                    metadata.application_name = value
+                    self.ids.file_drag_and_dropper.default_text_input_values["application_name"] = value
+                case "application_name", None:
+                    metadata.application_name = ""
+                    self.ids.file_drag_and_dropper.default_text_input_values["application_name"] = None
+                case "editing_time", int():
+                    metadata.editing_time = value
+                    self.ids.file_drag_and_dropper.default_text_input_values["editing_time"] = value
+                case "editing_time", None:
+                    metadata.editing_time = 0
+                    self.ids.file_drag_and_dropper.editing_time_text_input.text = "0"
+                    self.ids.file_drag_and_dropper.default_text_input_values["editing_time"] = 0
+        self.check_values_for_difference()
+
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
 
