@@ -267,7 +267,7 @@ def privet_smirnovoy(file: pathlib.Path):
         if random_creators_string is not None:
             word_file_metadata.creator = random_creators_string
         if random_modifiers_string is not None:
-            word_file_metadata.last_modified_by = privet_smirnovoy_preferences.random_modifiers_string
+            word_file_metadata.last_modified_by = random_modifiers_string
         if random_application is not None:
             word_file_metadata.application_name = random_application
 
