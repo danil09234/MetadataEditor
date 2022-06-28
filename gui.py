@@ -1,11 +1,11 @@
 import pathlib
 import sys
 import os
+from threading import Thread
 
 from kivy import utils, Config
-from kivy.clock import Clock
+from kivy.clock import Clock, mainthread
 from kivy.resources import resource_add_path, resource_find
-from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.screenmanager import Screen
@@ -17,7 +17,27 @@ from kivy.properties import VariableListProperty, StringProperty, ObjectProperty
 
 from textwrap import wrap
 
+from kivymd.app import MDApp
+
+import preferences
 import word
+
+
+Window.minimum_width = 830
+Window.minimum_height = 600
+
+
+# Constants
+PREFERENCES_FILEPATH = pathlib.Path("preferences.yaml")
+# Command "new"
+DEFAULT_WORD_EDITING_TIME = 0
+DEFAULT_WORD_REVISION = 1
+DEFAULT_WORD_CREATOR = "admin"
+DEFAULT_WORD_LAST_MODIFIED_BY = "admin"
+DEFAULT_WORD_APPLICATION_NAME = "Microsoft Office Word"
+# Command "privet_smirnovoy"
+PRIVET_SMIRNOVOY_EDITING_TIME = 599940
+PRIVET_SMIRNOVOY_REVISION = 9999999
 
 
 def label_text_wrap(text: str, label_width, label) -> str:
@@ -370,6 +390,41 @@ class ScreenManagement(ScreenManager):
 
 
 class MainUi(Screen):
+    @mainthread
+    def show_reset_button_warning(self, text=None):
+        if text is not None:
+            self.ids.reset_button_warning_icon.tooltip_text = text
+        animation = Animation(
+            opacity=1,
+            duration=0.3
+        )
+        animation.start(self.ids.reset_button_warning_icon)
+
+    def hide_reset_button_warning(self):
+        animation = Animation(
+            opacity=0,
+            duration=0.3
+        )
+        animation.start(self.ids.reset_button_warning_icon)
+
+    @mainthread
+    def update_text_inputs(self,
+                           editing_time_text_input: str | None = None,
+                           revision_text_input: str | None = None,
+                           creator_text_input: str | None = None,
+                           last_modified_by_text_input: str | None = None,
+                           application_text_input: str | None = None):
+        if editing_time_text_input is not None:
+            self.ids.editing_time_text_input.text = editing_time_text_input
+        if revision_text_input is not None:
+            self.ids.revision_text_input.text = revision_text_input
+        if creator_text_input is not None:
+            self.ids.creator_text_input.text = creator_text_input
+        if last_modified_by_text_input is not None:
+            self.ids.last_modified_by_text_input.text = last_modified_by_text_input
+        if application_text_input is not None:
+            self.ids.application_text_input.text = application_text_input
+
     def get_changes_dict(self) -> dict:
         default_values = self.ids.file_drag_and_dropper.default_text_input_values
 
@@ -377,16 +432,16 @@ class MainUi(Screen):
         try:
             if default_values["creator"] != self.ids.creator_text_input.text:
                 changes.update({"creator": self.ids.creator_text_input.text})
-            elif default_values["last_modified_by"] != self.ids.last_modified_by_text_input.text:
+            if default_values["last_modified_by"] != self.ids.last_modified_by_text_input.text:
                 changes.update({"last_modified_by": self.ids.last_modified_by_text_input.text})
-            elif str(default_values["revision"]) != (revision := self.ids.revision_text_input.text):
+            if str(default_values["revision"]) != (revision := self.ids.revision_text_input.text):
                 if revision == "":
                     changes.update({"revision": None})
                 else:
                     changes.update({"revision": int(self.ids.revision_text_input.text)})
-            elif default_values["application_name"] != self.ids.application_text_input.text:
+            if default_values["application_name"] != self.ids.application_text_input.text:
                 changes.update({"application_name": self.ids.application_text_input.text})
-            elif str(default_values["editing_time"]) != (editing_time := self.ids.editing_time_text_input.text):
+            if str(default_values["editing_time"]) != (editing_time := self.ids.editing_time_text_input.text):
                 if editing_time == "":
                     changes.update({editing_time: None})
                 else:
@@ -396,8 +451,6 @@ class MainUi(Screen):
         return changes
 
     def check_values_for_difference(self):
-        default_values = self.ids.file_drag_and_dropper.default_text_input_values
-
         if len(self.get_changes_dict()) != 0:
             self.ids.save_button.disabled = False
         else:
@@ -405,6 +458,10 @@ class MainUi(Screen):
 
     def text_input_text_updated(self) -> None:
         self.check_values_for_difference()
+
+    def save_button_pressed(self):
+        save_process = Thread(target=self.save_changes)
+        save_process.start()
 
     def save_changes(self):
         if (current_file := self.ids.file_drag_and_dropper.current_working_file) is None:
@@ -451,11 +508,81 @@ class MainUi(Screen):
                     self.ids.file_drag_and_dropper.default_text_input_values["editing_time"] = 0
         self.check_values_for_difference()
 
+    def reset_data_button_pressed(self):
+        reset_process = Thread(target=self.reset_data)
+        reset_process.start()
+
+    def reset_data(self):
+        if self.ids.file_drag_and_dropper.current_working_file is None:
+            return
+
+        new_command_preferences = preferences.NewCommandPreferences(PREFERENCES_FILEPATH)
+
+        completed_with_errors = False
+
+        editing_time = DEFAULT_WORD_EDITING_TIME
+        try:
+            editing_time = new_command_preferences.editing_time
+        except preferences.PreferenceNotFoundError:
+            completed_with_errors = True
+        except FileNotFoundError:
+            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            return
+
+        revision = DEFAULT_WORD_REVISION
+        try:
+            revision = new_command_preferences.revision
+        except preferences.PreferenceNotFoundError:
+            completed_with_errors = True
+        except FileNotFoundError:
+            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            return
+
+        creator = DEFAULT_WORD_CREATOR
+        try:
+            creator = new_command_preferences.creator
+        except preferences.PreferenceNotFoundError:
+            completed_with_errors = True
+        except FileNotFoundError:
+            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            return
+
+        last_modified_by = DEFAULT_WORD_LAST_MODIFIED_BY
+        try:
+            last_modified_by = new_command_preferences.last_modified_by
+        except preferences.PreferenceNotFoundError:
+            completed_with_errors = True
+        except FileNotFoundError:
+            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            return
+
+        application_name = DEFAULT_WORD_APPLICATION_NAME
+        try:
+            application_name = new_command_preferences.application
+        except preferences.PreferenceNotFoundError:
+            completed_with_errors = True
+        except FileNotFoundError:
+            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            return
+
+        self.update_text_inputs(
+            editing_time_text_input=str(editing_time),
+            revision_text_input=str(revision),
+            creator_text_input=creator,
+            last_modified_by_text_input=last_modified_by,
+            application_text_input=application_name
+        )
+
+        if completed_with_errors:
+            self.show_reset_button_warning(f"Some preferences was not found\nPlease, check {PREFERENCES_FILEPATH.name}")
+        else:
+            self.hide_reset_button_warning()
+
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
 
 
-class AntismirnovaApp(App):
+class AntismirnovaApp(MDApp):
     def build(self):
         return ScreenManagement()
 

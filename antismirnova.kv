@@ -3,6 +3,9 @@
 #:import Animation kivy.animation.Animation
 #:import label_text_wrap gui.label_text_wrap
 
+#:import MDIcon kivymd.uix.label
+#:import MDTooltip kivymd.uix.tooltip
+
 <ScreenManagement>:
     transition: FadeTransition()
     MainUi:
@@ -112,6 +115,13 @@
             text: root.drag_and_drop_label_text
             color: "black"
 
+<WarningIcon@MDIcon+MDTooltip>:
+    tooltip_bg_color: ((255, 255, 0, .5) if self.opacity == 1 else (255, 255, 0, 0))
+    tooltip_text_color: ("black" if self.opacity == 1 else (0, 0, 0, 0))
+    icon: "images/error-icon.png"
+    size: self.parent.height*0.32, self.size[0]
+    pos: self.parent.right-self.width-5, self.parent.pos[1]+self.parent.height/2-self.height/2
+
 <MainUi>:
     canvas.before:
         Color:
@@ -156,6 +166,12 @@
                         background_disabled_normal: utils.get_color_from_hex("beccd4")
                         disabled_color: "grey"
                         disabled: True
+                        on_press:
+                            root.reset_data_button_pressed()
+                        WarningIcon:
+                            id: reset_button_warning_icon
+                            opacity: 0
+                            tooltip_text: ""
                     CustomButton:
                         id: send_hello_button
                         canvas_color: utils.get_color_from_hex("5ec6ff")
@@ -164,6 +180,9 @@
                         background_disabled_normal: utils.get_color_from_hex("beccd4")
                         disabled_color: "grey"
                         disabled: True
+                        WarningIcon:
+                            opacity: 0
+                            tooltip_text: ""
                     CustomButton:
                         id: save_button
                         canvas_color: utils.get_color_from_hex("5ec6ff")
@@ -173,7 +192,7 @@
                         disabled_color: "grey"
                         disabled: True
                         on_press:
-                            root.save_changes()
+                            root.save_button_pressed()
         AnchorLayout:
             padding: 50, 25, 50, 50
             GridLayout:
