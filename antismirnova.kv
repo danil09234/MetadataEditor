@@ -180,7 +180,10 @@
                         background_disabled_normal: utils.get_color_from_hex("beccd4")
                         disabled_color: "grey"
                         disabled: True
+                        on_press:
+                            root.send_hello_button_pressed()
                         WarningIcon:
+                            id: send_hello_button_warning_icon
                             opacity: 0
                             tooltip_text: ""
                     CustomButton:

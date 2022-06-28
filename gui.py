@@ -213,7 +213,7 @@ class FileDragAndDropper(BoxLayout):
 
         old_text, label.text = label.text, new_text
 
-        def set_default(text):
+        def set_default():
             label.text = old_text
             self.drag_and_drop_text_changing = False
 
@@ -391,7 +391,7 @@ class ScreenManagement(ScreenManager):
 
 class MainUi(Screen):
     @mainthread
-    def show_reset_button_warning(self, text=None):
+    def show_reset_button_warning(self, text: str | None = None):
         if text is not None:
             self.ids.reset_button_warning_icon.tooltip_text = text
         animation = Animation(
@@ -406,6 +406,22 @@ class MainUi(Screen):
             duration=0.3
         )
         animation.start(self.ids.reset_button_warning_icon)
+
+    def show_send_hello_button_warning(self, text: str | None = None):
+        if text is not None:
+            self.ids.send_hello_button_warning_icon.tooltip_text = text
+        animation = Animation(
+            opacity=1,
+            duration=0.3
+        )
+        animation.start(self.ids.send_hello_button_warning_icon)
+
+    def hide_send_hello_button_warning(self):
+        animation = Animation(
+            opacity=0,
+            duration=0.3
+        )
+        animation.start(self.ids.send_hello_button_warning_icon)
 
     @mainthread
     def update_text_inputs(self,
@@ -460,6 +476,7 @@ class MainUi(Screen):
         self.check_values_for_difference()
 
     def save_button_pressed(self):
+        self.ids.save_button.disabled = True
         save_process = Thread(target=self.save_changes)
         save_process.start()
 
@@ -577,6 +594,64 @@ class MainUi(Screen):
             self.show_reset_button_warning(f"Some preferences was not found\nPlease, check {PREFERENCES_FILEPATH.name}")
         else:
             self.hide_reset_button_warning()
+
+    def send_hello_button_pressed(self):
+        send_hello_process = Thread(target=self.send_hello)
+        send_hello_process.start()
+
+    def send_hello(self):
+        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference(PREFERENCES_FILEPATH)
+
+        completed_with_errors = False
+
+        random_creators_string = None
+        try:
+            random_creators_string = privet_smirnovoy_preferences.random_creators_string
+        except preferences.PreferenceNotFoundError:
+            completed_with_errors = True
+        except preferences.InvalidPreferenceValueError:
+            completed_with_errors = True
+        except FileNotFoundError:
+            self.show_send_hello_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            return
+
+        random_modifiers_string = None
+        try:
+            random_modifiers_string = privet_smirnovoy_preferences.random_modifiers_string
+        except preferences.PreferenceNotFoundError:
+            completed_with_errors = True
+        except preferences.InvalidPreferenceValueError:
+            completed_with_errors = True
+        except FileNotFoundError:
+            self.show_send_hello_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            return
+
+        random_application = None
+        try:
+            random_application = privet_smirnovoy_preferences.random_application
+        except preferences.PreferenceNotFoundError:
+            completed_with_errors = True
+        except FileNotFoundError:
+            self.show_send_hello_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            return
+
+        self.update_text_inputs(
+            editing_time_text_input=str(PRIVET_SMIRNOVOY_EDITING_TIME),
+            revision_text_input=str(PRIVET_SMIRNOVOY_REVISION),
+        )
+
+        if random_creators_string is not None:
+            self.update_text_inputs(creator_text_input=random_creators_string)
+        if random_modifiers_string is not None:
+            self.update_text_inputs(last_modified_by_text_input=random_modifiers_string)
+        if random_application is not None:
+            self.update_text_inputs(application_text_input=random_application)
+
+        if completed_with_errors:
+            self.show_send_hello_button_warning(f"Some preferences was not found or invalid\n"
+                                                f"Please, check {PREFERENCES_FILEPATH.name}")
+        else:
+            self.hide_send_hello_button_warning()
 
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
