@@ -49,6 +49,10 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.metadata.application_name = 123
 
+    def test_metadata_application_name_set_none(self):
+        self.metadata.application_name = None
+        self.assertEqual(None, self.metadata.application_name, "File application name is not as expected")
+
     # Tests for Metadata.editing_time
     def test_metadata_editing_time_read_write(self):
         testing_value = 60
@@ -58,6 +62,10 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
     def test_metadata_editing_time_with_invalid_type_str(self):
         with self.assertRaises(TypeError):
             self.metadata.editing_time = "60"
+
+    def test_metadata_editing_time_set_none(self):
+        self.metadata.editing_time = None
+        self.assertEqual(None, self.metadata.editing_time, "File editing time is not as expected")
 
     # Tests for Metadata.creator
     def test_metadata_creator_read_write(self):
@@ -69,15 +77,23 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.metadata.creator = 123
 
+    def test_metadata_creator_set_none(self):
+        self.metadata.creator = None
+        self.assertEqual(None, self.metadata.creator, "File creator is not as expected")
+
     # Tests for Metadata.last_modified_by
     def test_metadata_last_modified_by_read_write(self):
         testing_value = "Beta user"
         self.metadata.last_modified_by = testing_value
         self.assertEqual(testing_value, self.metadata.last_modified_by, "File modifiers are different")
 
-    def test_metadata_last_modified_with_invalid_type_int(self):
+    def test_metadata_last_modified_by_with_invalid_type_int(self):
         with self.assertRaises(TypeError):
             self.metadata.last_modified_by = 123
+
+    def test_metadata_last_modified_by_set_none(self):
+        self.metadata.last_modified_by = None
+        self.assertEqual(None, self.metadata.last_modified_by, "File modifier is not as expected")
 
     # Tests for Metadata.revision
     def test_metadata_revision_read_write(self):
@@ -88,6 +104,10 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
     def test_metadata_revision_with_invalid_type_str(self):
         with self.assertRaises(TypeError):
             self.metadata.revision = "100"
+
+    def test_metadata_revision_set_none(self):
+        self.metadata.revision = None
+        self.assertEqual(None, self.metadata.revision, "File revision is not as expected")
 
 
 class TestMetadataByFileWithoutProperties(unittest.TestCase):
@@ -120,6 +140,10 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.metadata.application_name = 123
 
+    def test_metadata_application_name_set_none(self):
+        self.metadata.application_name = None
+        self.assertEqual(None, self.metadata.application_name, "File application is not as expected")
+
     # Tests for Metadata.editing_time
     def test_metadata_editing_time_read(self):
         self.assertEqual(0, self.metadata.editing_time)
@@ -132,6 +156,10 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
     def test_metadata_editing_time_with_invalid_type_str(self):
         with self.assertRaises(TypeError):
             self.metadata.editing_time = "60"
+
+    def test_metadata_editing_time_set_none(self):
+        self.metadata.editing_time = None
+        self.assertEqual(None, self.metadata.editing_time, "File editing time is not as expected")
 
     # Tests for Metadata.creator
     def test_metadata_creator_read(self):
@@ -146,6 +174,10 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.metadata.creator = 123
 
+    def test_metadata_creator_set_none(self):
+        self.metadata.creator = None
+        self.assertEqual(None, self.metadata.creator, "File creator is not as expected")
+
     # Tests for Metadata.last_modified
     def test_metadata_last_modified_read(self):
         self.assertEqual(None, self.metadata.last_modified_by)
@@ -159,6 +191,10 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.metadata.last_modified_by = 123
 
+    def test_metadata_last_modified_by_set_none(self):
+        self.metadata.last_modified_by = None
+        self.assertEqual(None, self.metadata.last_modified_by, "File last modified by is not as expected")
+
     # Tests for Metadata.revision
     def test_metadata_revision_read(self):
         self.assertEqual(None, self.metadata.revision)
@@ -171,6 +207,9 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
     def test_metadata_revision_with_invalid_type_str(self):
         with self.assertRaises(TypeError):
             self.metadata.revision = "100"
+
+    def test_metadata_revision_set_none(self):
+        self.assertEqual(None, self.metadata.revision, "File revision is not as expected")
 
 
 class TestWordCoreXmlByFileWithProperties(unittest.TestCase):
