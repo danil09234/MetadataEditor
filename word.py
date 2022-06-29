@@ -69,7 +69,9 @@ class WordRelsXml:
 
         new_property = domtree.createElement("Relationship")
         new_property.setAttribute("Id", "rId2")
-        new_property.setAttribute("Type", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties")
+        new_property.setAttribute(
+            "Type", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"
+        )
         new_property.setAttribute("Target", "docProps/core.xml")
 
         core_file.appendChild(new_property)
@@ -299,6 +301,36 @@ class WordCoreXml:
             case _:
                 raise TypeError(f"WordCoreXml.revision should be int (not {type(value)})")
 
+    def __getitem__(self, item: str) -> str | None:
+        match item:
+            case str("creator"):
+                return self.creator
+            case str("lastModifiedBy"):
+                return self.last_modified_by
+            case str("revision"):
+                return self.revision
+            case str():
+                raise KeyError
+            case _:
+                raise TypeError(f"Key should be string (not {type(item)})")
+
+    def __setitem__(self, key: str, value: str | int | None) -> None:
+        match key, value:
+            case str("creator"), _:
+                self.creator = value
+            case str("lastModifiedBy"), _:
+                self.last_modified_by = value
+            case str("revision"), _:
+                self.revision = value
+            case str(), str() | int() | None:
+                raise KeyError
+            case _, str() | int() | None:
+                raise TypeError(f"Key should be string (not {type(key)})")
+            case str(), _:
+                raise TypeError(f"Value should be string/int/NoneType (not {type(key)})")
+            case _:
+                raise TypeError("Invalid key and value")
+
     def __init__(self, xml_file_path: pathlib.Path):
         self.xml_file_path = xml_file_path
 
@@ -407,6 +439,32 @@ class WordAppXml:
             case _:
                 raise TypeError("WordAppXml.total_time should be int"
                                 f'(not {type(value)})')
+
+    def __getitem__(self, item: str) -> str | int | None:
+        match item:
+            case str("TotalTime"):
+                return self.total_time
+            case str("Application"):
+                return self.application
+            case str():
+                raise KeyError
+            case _:
+                raise TypeError(f"Key should be string (not {type(item)})")
+
+    def __setitem__(self, key: str, value: str | int | None) -> None:
+        match key, value:
+            case str("TotalTime"), _:
+                self.total_time = value
+            case str("Application"), _:
+                self.application = value
+            case str(), str() | int() | None:
+                raise KeyError
+            case _, str() | int() | None:
+                raise TypeError(f"Key should be string (not {type(key)})")
+            case str(), _:
+                raise TypeError(f"Value should be string/int/NoneType (not {type(key)})")
+            case _:
+                raise TypeError("Invalid key and value")
 
     def __init__(self, xml_file_path: pathlib.Path):
         match xml_file_path:
@@ -552,6 +610,64 @@ class Metadata:
                 self.__remove_temp_folder()
             case _:
                 raise TypeError(f"Metadata.revision should be int or None (not {type(value)})")
+
+    def __getitem__(self, item: str) -> str | int | None:
+        match item:
+            case str():
+                core_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
+                core = WordCoreXml(core_xml_file)
+                try:
+                    self.__extract_all()
+                    return core[item]
+                except KeyError:
+                    pass
+                finally:
+                    self.__remove_temp_folder()
+
+                app_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
+                app = WordAppXml(app_xml_file)
+                try:
+                    self.__extract_all()
+                    return app[item]
+                except KeyError:
+                    raise KeyError(f'Invalid property name "{item}"')
+                finally:
+                    self.__remove_temp_folder()
+            case _:
+                raise TypeError(f"Key should be string (not {type(item)})")
+
+    def __setitem__(self, key: str, value: str | int | None):
+        match key, value:
+            case str(), str() | int() | None:
+                core_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
+                core = WordCoreXml(core_xml_file)
+                try:
+                    self.__extract_all()
+                    core[key] = value
+                    self.__pack_all()
+                except KeyError:
+                    pass
+                else:
+                    return
+                finally:
+                    self.__remove_temp_folder()
+
+                app_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
+                app = WordAppXml(app_xml_file)
+                try:
+                    self.__extract_all()
+                    app[key] = value
+                    self.__pack_all()
+                except KeyError:
+                    raise KeyError(f'Invalid property name "{key}"')
+                finally:
+                    self.__remove_temp_folder()
+            case _, str() | int() | None:
+                raise TypeError(f"Key should be string (not {type(key)})")
+            case str(), _:
+                raise TypeError(f"Value should be string or NoneType (not {type(key)})")
+            case _:
+                raise TypeError("Invalid key and value")
 
     def __init__(self, filepath: pathlib.Path):
         self.__filepath = filepath
