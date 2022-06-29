@@ -1,12 +1,34 @@
+import datetime
+import re
 import zipfile
 import pathlib
 import os
 import shutil
 from typing import NamedTuple, Literal
 import xml.dom.minidom
+import pytz
 
 
 __word_file_suffixes = [".docx"]
+
+# Constants
+DEFAULT_WORD_CORE_XML_FILEPATH = pathlib.Path("default_word_core.xml")
+DEFAULT_WORD_APP_XML_FILEPATH = pathlib.Path("default_word_app.xml")
+
+W3CDTF_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+RE_W3CDTF = "(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.(\d{2}))?Z?"
+
+
+def datetime_to_w3cdtf(dt):
+    """Convert from a datetime to a timestamp string."""
+    return datetime.datetime.strftime(dt, W3CDTF_FORMAT)
+
+
+def w3cdtf_to_datetime(formatted_string):
+    """Convert from a timestamp string to a datetime object."""
+    match = re.match(RE_W3CDTF, formatted_string)
+    digits = map(int, match.groups()[:6])
+    return datetime.datetime(*digits)
 
 
 class WordCoreProperty(NamedTuple):
@@ -37,6 +59,82 @@ def is_word_file(filepath: pathlib.Path) -> bool:
 
 class PropertyNotFoundError(Exception):
     pass
+
+
+class WordRelsXml:
+    """Class to work with .rels file"""
+    def add_information_about_core(self):
+        domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+        core_file = domtree.documentElement
+
+        new_property = domtree.createElement("Relationship")
+        new_property.setAttribute("Id", "rId2")
+        new_property.setAttribute("Type", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties")
+        new_property.setAttribute("Target", "docProps/core.xml")
+
+        core_file.appendChild(new_property)
+
+        with open(self.xml_file_path, "w", encoding='utf-8') as file:
+            domtree.writexml(file, encoding='utf-8')
+
+    def add_information_about_app(self):
+        domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+        core_file = domtree.documentElement
+
+        new_property = domtree.createElement("Relationship")
+        new_property.setAttribute("Id", "rId3")
+        new_property.setAttribute("Type", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties")
+        new_property.setAttribute("Target", "docProps/app.xml")
+
+        core_file.appendChild(new_property)
+
+        with open(self.xml_file_path, "w", encoding='utf-8') as file:
+            domtree.writexml(file, encoding='utf-8')
+
+    def __init__(self, xml_file_path: pathlib.Path):
+        match xml_file_path:
+            case pathlib.Path():
+                self.xml_file_path = xml_file_path
+            case _:
+                raise TypeError("WordRelsXml(xml_file_path) xml_file_path should be pathlib.Path"
+                                f'(not {type(xml_file_path)})')
+
+
+class WordContentTypesXml:
+    """Class to work with [Content_Types].xml file"""
+    def add_information_about_core(self):
+        domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+        core_file = domtree.documentElement
+
+        new_property = domtree.createElement("Override")
+        new_property.setAttribute("PartName", "/docProps/core.xml")
+        new_property.setAttribute("ContentType", "application/vnd.openxmlformats-package.core-properties+xml")
+
+        core_file.appendChild(new_property)
+
+        with open(self.xml_file_path, "w", encoding='utf-8') as file:
+            domtree.writexml(file, encoding='utf-8')
+
+    def add_information_about_app(self):
+        domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
+        core_file = domtree.documentElement
+
+        new_property = domtree.createElement("Override")
+        new_property.setAttribute("PartName", "/docProps/app.xml")
+        new_property.setAttribute("ContentType", "application/vnd.openxmlformats-officedocument.extended-properties+xml")
+
+        core_file.appendChild(new_property)
+
+        with open(self.xml_file_path, "w", encoding='utf-8') as file:
+            domtree.writexml(file, encoding='utf-8')
+
+    def __init__(self, xml_file_path: pathlib.Path):
+        match xml_file_path:
+            case pathlib.Path():
+                self.xml_file_path = xml_file_path
+            case _:
+                raise TypeError("WordContentTypesXml(xml_file_path) xml_file_path should be pathlib.Path"
+                                f'(not {type(xml_file_path)})')
 
 
 class WordCoreXml:
@@ -72,7 +170,30 @@ class WordCoreXml:
                     return namespace
         return None
 
+    def __create_core_xml(self):
+        domtree = xml.dom.minidom.parse(str(DEFAULT_WORD_CORE_XML_FILEPATH.absolute()))
+
+        pathlib.Path(str(self.xml_file_path.absolute().parent)).mkdir()
+        with open(self.xml_file_path.absolute(), mode="w") as file:
+            domtree.writexml(file, encoding='utf-8')
+
+        content_types = WordContentTypesXml(pathlib.Path(self.xml_file_path.parent.parent, "[Content_Types].xml"))
+        content_types.add_information_about_core()
+
+        rels = WordRelsXml(pathlib.Path(self.xml_file_path.parent.parent, "_rels", ".rels"))
+        rels.add_information_about_core()
+        self.__fill_created_date(datetime.datetime.now(pytz.utc))
+        self.__fill_modified_data(datetime.datetime.now(pytz.utc))
+
+    def __fill_created_date(self, date: datetime.datetime):
+        self.__set_property(WordCoreProperty("created", datetime_to_w3cdtf(date)))
+
+    def __fill_modified_data(self, date: datetime.datetime):
+        self.__set_property(WordCoreProperty("modified", datetime_to_w3cdtf(date)))
+
     def __set_property(self, core_property: WordCoreProperty) -> None:
+        if not self.xml_file_path.exists():
+            self.__create_core_xml()
         self.__recover_namespaces()
 
         core_tags_subsequence = (
@@ -118,6 +239,8 @@ class WordCoreXml:
     def __get_property(self, property_name: str) -> str | None:
         match property_name:
             case str():
+                if not self.xml_file_path.exists():
+                    self.__create_core_xml()
                 domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
                 core_file = domtree.documentElement
 
@@ -182,6 +305,20 @@ class WordCoreXml:
 
 class WordAppXml:
     """Class to work with app.xml file"""
+    def __create_app_xml(self):
+        domtree = xml.dom.minidom.parse(str(DEFAULT_WORD_APP_XML_FILEPATH.absolute()))
+
+        if not self.xml_file_path.absolute().parent.exists():
+            pathlib.Path(str(self.xml_file_path.absolute().parent)).mkdir()
+        with open(self.xml_file_path.absolute(), mode="w") as file:
+            domtree.writexml(file, encoding='utf-8')
+
+        content_types = WordContentTypesXml(pathlib.Path(self.xml_file_path.parent.parent, "[Content_Types].xml"))
+        content_types.add_information_about_app()
+
+        rels = WordRelsXml(pathlib.Path(self.xml_file_path.parent.parent, "_rels", ".rels"))
+        rels.add_information_about_app()
+
     def __set_property(self, app_property: WordAppProperty) -> None:
         app_tags_subsequence = (
             "Template", "TotalTime", "Pages", "Words", "Characters",
@@ -191,11 +328,17 @@ class WordAppXml:
         )
         match app_property:
             case WordAppProperty("TotalTime" | "Application" as property_name, str() | None as property_value):
+                if not self.xml_file_path.exists():
+                    self.__create_app_xml()
                 domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
                 core_file = domtree.documentElement
 
                 try:
-                    core_file.getElementsByTagName(property_name)[0].childNodes[0].data = property_value
+                    if core_file.getElementsByTagName(property_name)[0].childNodes.length == 0:
+                        text_node = domtree.createTextNode(property_value)
+                        core_file.getElementsByTagName(property_name)[0].childNodes.append(text_node)
+                    else:
+                        core_file.getElementsByTagName(property_name)[0].childNodes[0].data = property_value
                 except IndexError:
                     new_property = domtree.createElement(property_name)
                     new_property.appendChild(domtree.createTextNode(property_value))
@@ -217,6 +360,8 @@ class WordAppXml:
     def __get_property(self, app_property: str) -> str | None:
         match app_property:
             case str("TotalTime" | "Application" as property_name):
+                if not self.xml_file_path.exists():
+                    self.__create_app_xml()
                 domtree = xml.dom.minidom.parse(str(self.xml_file_path.absolute()))
                 core_file = domtree.documentElement
 

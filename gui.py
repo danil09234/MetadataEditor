@@ -508,7 +508,7 @@ class MainUi(Screen):
                     self.ids.file_drag_and_dropper.default_text_input_values["revision"] = value
                 case "revision", None:
                     metadata.revision = 1
-                    self.ids.file_drag_and_dropper.editing_time_text_input.text = "1"
+                    self.update_text_inputs(editing_time_text_input="1")
                     self.ids.file_drag_and_dropper.default_text_input_values["revision"] = 1
                 case "application_name", str():
                     metadata.application_name = value
@@ -521,7 +521,7 @@ class MainUi(Screen):
                     self.ids.file_drag_and_dropper.default_text_input_values["editing_time"] = value
                 case "editing_time", None:
                     metadata.editing_time = 0
-                    self.ids.file_drag_and_dropper.editing_time_text_input.text = "0"
+                    self.update_text_inputs(editing_time_text_input="0")
                     self.ids.file_drag_and_dropper.default_text_input_values["editing_time"] = 0
         self.check_values_for_difference()
 
