@@ -453,9 +453,9 @@ class Metadata:
             return None
 
     @application_name.setter
-    def application_name(self, value: str) -> None:
+    def application_name(self, value: str | None) -> None:
         match value:
-            case str():
+            case str() | None:
                 self.__extract_all()
                 property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
                 app = WordAppXml(property_xml_file)
@@ -463,7 +463,7 @@ class Metadata:
                 self.__pack_all()
                 self.__remove_temp_folder()
             case _:
-                raise TypeError(f"Metadata.application_name should be str (not {type(value)})")
+                raise TypeError(f"Metadata.application_name should be str or None (not {type(value)})")
 
     @property
     def editing_time(self) -> int:
@@ -475,9 +475,9 @@ class Metadata:
         return editing_time
 
     @editing_time.setter
-    def editing_time(self, value: int):
+    def editing_time(self, value: int | None):
         match value:
-            case int():
+            case int() | None:
                 self.__extract_all()
                 property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
                 app = WordAppXml(property_xml_file)
@@ -485,7 +485,7 @@ class Metadata:
                 self.__pack_all()
                 self.__remove_temp_folder()
             case _:
-                raise TypeError(f"Metadata.editing_time should be int (not {type(value)})")
+                raise TypeError(f"Metadata.editing_time should be int or None (not {type(value)})")
 
     @property
     def creator(self) -> str | None:
@@ -497,9 +497,9 @@ class Metadata:
         return creator
 
     @creator.setter
-    def creator(self, value: str) -> None:
+    def creator(self, value: str | None) -> None:
         match value:
-            case str():
+            case str() | None:
                 self.__extract_all()
                 property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
                 core = WordCoreXml(property_xml_file)
@@ -507,7 +507,7 @@ class Metadata:
                 self.__pack_all()
                 self.__remove_temp_folder()
             case _:
-                raise TypeError(f"Metadata.creator should be str (not {type(value)})")
+                raise TypeError(f"Metadata.creator should be str or None (not {type(value)})")
 
     @property
     def last_modified_by(self) -> str | None:
@@ -519,9 +519,9 @@ class Metadata:
         return last_modified_by
 
     @last_modified_by.setter
-    def last_modified_by(self, value: str):
+    def last_modified_by(self, value: str | None):
         match value:
-            case str():
+            case str() | None:
                 self.__extract_all()
                 property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
                 core = WordCoreXml(property_xml_file)
@@ -529,7 +529,7 @@ class Metadata:
                 self.__pack_all()
                 self.__remove_temp_folder()
             case _:
-                raise TypeError(f"Metadata.last_modified_by should be str (not {type(value)})")
+                raise TypeError(f"Metadata.last_modified_by should be str or None (not {type(value)})")
 
     @property
     def revision(self) -> int | None:
@@ -541,9 +541,9 @@ class Metadata:
         return revision
 
     @revision.setter
-    def revision(self, value: int):
+    def revision(self, value: int | None):
         match value:
-            case int():
+            case int() | None:
                 self.__extract_all()
                 property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "core.xml")
                 core = WordCoreXml(property_xml_file)
@@ -551,7 +551,7 @@ class Metadata:
                 self.__pack_all()
                 self.__remove_temp_folder()
             case _:
-                raise TypeError(f"Metadata.revision should be int (not {type(value)})")
+                raise TypeError(f"Metadata.revision should be int or None (not {type(value)})")
 
     def __init__(self, filepath: pathlib.Path):
         self.__filepath = filepath
