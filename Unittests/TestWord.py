@@ -53,6 +53,22 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
         self.metadata.application_name = None
         self.assertEqual(None, self.metadata.application_name, "File application name is not as expected")
 
+    def test_metadata_application_name_getitem(self):
+        self.assertEqual("Microsoft Office Word", self.metadata["Application"], "File application is not as expected")
+
+    def test_metadata_application_name_setitem(self):
+        testing_value = "Beta application name"
+        self.metadata["Application"] = testing_value
+        self.assertEqual(testing_value, self.metadata["Application"], "File application is not as expected")
+
+    def test_metadata_application_name_setitem_set_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.metadata["Application"] = 123
+
+    def test_metadata_application_name_setitem_set_none(self):
+        self.metadata.application_name = None
+        self.assertEqual(None, self.metadata["Application"], "File application is not as expected")
+
     # Tests for Metadata.editing_time
     def test_metadata_editing_time_read_write(self):
         testing_value = 60
@@ -66,6 +82,22 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
     def test_metadata_editing_time_set_none(self):
         self.metadata.editing_time = None
         self.assertEqual(None, self.metadata.editing_time, "File editing time is not as expected")
+
+    def test_metadata_editing_time_getitem(self):
+        self.assertEqual(0, self.metadata["TotalTime"], "File application is not as expected")
+
+    def test_metadata_editing_time_setitem(self):
+        testing_value = 100
+        self.metadata["TotalTime"] = testing_value
+        self.assertEqual(testing_value, self.metadata["TotalTime"], "File editing time is not as expected")
+
+    def test_metadata_editing_time_setitem_set_invalid_type_str(self):
+        with self.assertRaises(TypeError):
+            self.metadata["TotalTime"] = "123"
+
+    def test_metadata_editing_time_setitem_set_none(self):
+        self.metadata["TotalTime"] = None
+        self.assertEqual(None, self.metadata["TotalTime"], "File editing time is not as expected")
 
     # Tests for Metadata.creator
     def test_metadata_creator_read_write(self):
@@ -81,6 +113,22 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
         self.metadata.creator = None
         self.assertEqual(None, self.metadata.creator, "File creator is not as expected")
 
+    def test_metadata_creator_getitem(self):
+        self.assertEqual("user", self.metadata["creator"], "File creator is not as expected")
+
+    def test_metadata_creator_setitem(self):
+        testing_value = "Beta creator"
+        self.metadata["creator"] = testing_value
+        self.assertEqual(testing_value, self.metadata["creator"], "File creator is not as expected")
+
+    def test_metadata_creator_setitem_set_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.metadata["creator"] = 123
+
+    def test_metadata_creator_setitem_set_none(self):
+        self.metadata["creator"] = None
+        self.assertEqual(None, self.metadata["creator"], "File creator is not as expected")
+
     # Tests for Metadata.last_modified_by
     def test_metadata_last_modified_by_read_write(self):
         testing_value = "Beta user"
@@ -93,7 +141,23 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
 
     def test_metadata_last_modified_by_set_none(self):
         self.metadata.last_modified_by = None
-        self.assertEqual(None, self.metadata.last_modified_by, "File modifier is not as expected")
+        self.assertEqual(None, self.metadata.last_modified_by, "File lastModifiedBy is not as expected")
+
+    def test_metadata_last_modified_by_getitem(self):
+        self.assertEqual("user", self.metadata["lastModifiedBy"], "File lastModifiedBy is not as expected")
+
+    def test_metadata_last_modified_by_setitem(self):
+        testing_value = "Beta user"
+        self.metadata["lastModifiedBy"] = testing_value
+        self.assertEqual(testing_value, self.metadata["lastModifiedBy"], "File lastModifiedBy is not as expected")
+
+    def test_metadata_last_modified_by_setitem_set_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.metadata["lastModifiedBy"] = 123
+
+    def test_metadata_last_modified_by_setitem_set_none(self):
+        self.metadata["lastModifiedBy"] = None
+        self.assertEqual(None, self.metadata["lastModifiedBy"], "File modified is not as expected")
 
     # Tests for Metadata.revision
     def test_metadata_revision_read_write(self):
@@ -108,6 +172,22 @@ class TestMetadataByFileWithProperties(unittest.TestCase):
     def test_metadata_revision_set_none(self):
         self.metadata.revision = None
         self.assertEqual(None, self.metadata.revision, "File revision is not as expected")
+
+    def test_metadata_revision_getitem(self):
+        self.assertEqual(2, self.metadata["revision"], "File revision is not as expected")
+
+    def test_metadata_revision_setitem(self):
+        testing_value = 100
+        self.metadata["revision"] = testing_value
+        self.assertEqual(testing_value, self.metadata["revision"], "File revision is not as expected")
+
+    def test_metadata_revision_setitem_set_invalid_type_str(self):
+        with self.assertRaises(TypeError):
+            self.metadata["revision"] = "100"
+
+    def test_metadata_revision_setitem_set_none(self):
+        self.metadata["revision"] = None
+        self.assertEqual(None, self.metadata["revision"], "File revision is not as expected")
 
 
 class TestMetadataByFileWithoutProperties(unittest.TestCase):
@@ -144,6 +224,22 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
         self.metadata.application_name = None
         self.assertEqual(None, self.metadata.application_name, "File application is not as expected")
 
+    def test_metadata_application_name_getitem(self):
+        self.assertEqual(None, self.metadata["Application"], "File application is not as expected")
+
+    def test_metadata_application_name_setitem(self):
+        testing_value = "Beta application name"
+        self.metadata["Application"] = testing_value
+        self.assertEqual(testing_value, self.metadata["Application"], "File application is not as expected")
+
+    def test_metadata_application_name_setitem_set_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.metadata["Application"] = 123
+
+    def test_metadata_application_name_setitem_set_none(self):
+        self.metadata.application_name = None
+        self.assertEqual(None, self.metadata["Application"], "File application is not as expected")
+
     # Tests for Metadata.editing_time
     def test_metadata_editing_time_read(self):
         self.assertEqual(0, self.metadata.editing_time)
@@ -160,6 +256,22 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
     def test_metadata_editing_time_set_none(self):
         self.metadata.editing_time = None
         self.assertEqual(None, self.metadata.editing_time, "File editing time is not as expected")
+
+    def test_metadata_editing_time_getitem(self):
+        self.assertEqual(0, self.metadata["TotalTime"], "File application is not as expected")
+
+    def test_metadata_editing_time_setitem(self):
+        testing_value = 100
+        self.metadata["TotalTime"] = testing_value
+        self.assertEqual(testing_value, self.metadata["TotalTime"], "File editing time is not as expected")
+
+    def test_metadata_editing_time_setitem_set_invalid_type_str(self):
+        with self.assertRaises(TypeError):
+            self.metadata["TotalTime"] = "123"
+
+    def test_metadata_editing_time_setitem_set_none(self):
+        self.metadata["TotalTime"] = None
+        self.assertEqual(None, self.metadata["TotalTime"], "File editing time is not as expected")
 
     # Tests for Metadata.creator
     def test_metadata_creator_read(self):
@@ -178,6 +290,22 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
         self.metadata.creator = None
         self.assertEqual(None, self.metadata.creator, "File creator is not as expected")
 
+    def test_metadata_creator_getitem(self):
+        self.assertEqual(None, self.metadata["creator"], "File creator is not as expected")
+
+    def test_metadata_creator_setitem(self):
+        testing_value = "Beta creator"
+        self.metadata["creator"] = testing_value
+        self.assertEqual(testing_value, self.metadata["creator"], "File creator is not as expected")
+
+    def test_metadata_creator_setitem_set_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.metadata["creator"] = 123
+
+    def test_metadata_creator_setitem_set_none(self):
+        self.metadata["creator"] = None
+        self.assertEqual(None, self.metadata["creator"], "File creator is not as expected")
+
     # Tests for Metadata.last_modified
     def test_metadata_last_modified_read(self):
         self.assertEqual(None, self.metadata.last_modified_by)
@@ -195,6 +323,22 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
         self.metadata.last_modified_by = None
         self.assertEqual(None, self.metadata.last_modified_by, "File last modified by is not as expected")
 
+    def test_metadata_last_modified_by_getitem(self):
+        self.assertEqual(None, self.metadata["lastModifiedBy"], "File lastModifiedBy is not as expected")
+
+    def test_metadata_last_modified_by_setitem(self):
+        testing_value = "Beta user"
+        self.metadata["lastModifiedBy"] = testing_value
+        self.assertEqual(testing_value, self.metadata["lastModifiedBy"], "File lastModifiedBy is not as expected")
+
+    def test_metadata_last_modified_by_setitem_set_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.metadata["lastModifiedBy"] = 123
+
+    def test_metadata_last_modified_by_setitem_set_none(self):
+        self.metadata["lastModifiedBy"] = None
+        self.assertEqual(None, self.metadata["lastModifiedBy"], "File modified is not as expected")
+
     # Tests for Metadata.revision
     def test_metadata_revision_read(self):
         self.assertEqual(None, self.metadata.revision)
@@ -210,6 +354,22 @@ class TestMetadataByFileWithoutProperties(unittest.TestCase):
 
     def test_metadata_revision_set_none(self):
         self.assertEqual(None, self.metadata.revision, "File revision is not as expected")
+
+    def test_metadata_revision_getitem(self):
+        self.assertEqual(None, self.metadata["revision"], "File revision is not as expected")
+
+    def test_metadata_revision_setitem(self):
+        testing_value = 100
+        self.metadata["revision"] = testing_value
+        self.assertEqual(testing_value, self.metadata["revision"], "File revision is not as expected")
+
+    def test_metadata_revision_setitem_set_invalid_type_str(self):
+        with self.assertRaises(TypeError):
+            self.metadata["revision"] = "100"
+
+    def test_metadata_revision_setitem_set_none(self):
+        self.metadata["revision"] = None
+        self.assertEqual(None, self.metadata["revision"], "File revision is not as expected")
 
 
 class TestWordCoreXmlByFileWithProperties(unittest.TestCase):
@@ -240,6 +400,22 @@ class TestWordCoreXmlByFileWithProperties(unittest.TestCase):
         self.core.creator = None
         self.assertEqual(None, self.core.creator)
 
+    def test_creator_getitem(self):
+        self.assertEqual("user", self.core["creator"], "File creator is not as expected")
+
+    def test_creator_setitem(self):
+        testing_value = "Beta user"
+        self.core["creator"] = testing_value
+        self.assertEqual(testing_value, self.core["creator"], "File creator is not as expected")
+
+    def test_creator_setitem_with_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.core["creator"] = 123
+
+    def test_creator_setitem_set_none(self):
+        self.core["creator"] = None
+        self.assertEqual(None, self.core["creator"], "File creator is not as expected")
+
     # Tests for WordCoreXml.last_modified_by
     def test_last_modified_by_read(self):
         self.assertEqual("user", self.core.last_modified_by, "last_modified_by property is not as expected")
@@ -257,6 +433,22 @@ class TestWordCoreXmlByFileWithProperties(unittest.TestCase):
         self.core.last_modified_by = None
         self.assertEqual(None, self.core.last_modified_by)
 
+    def test_last_modified_by_getitem(self):
+        self.assertEqual("user", self.core["lastModifiedBy"], "File creator is not as expected")
+
+    def test_last_modified_by_setitem(self):
+        testing_value = "Beta user"
+        self.core["lastModifiedBy"] = testing_value
+        self.assertEqual(testing_value, self.core["lastModifiedBy"], "File creator is not as expected")
+
+    def test_last_modified_by_setitem_with_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.core["lastModifiedBy"] = 123
+
+    def test_last_modified_by_setitem_set_none(self):
+        self.core["lastModifiedBy"] = None
+        self.assertEqual(None, self.core["lastModifiedBy"], "File creator is not as expected")
+
     # Tests for WordCoreXml.revision
     def test_revision_read(self):
         self.assertEqual(2, self.core.revision, "revision property is not as expected")
@@ -273,6 +465,22 @@ class TestWordCoreXmlByFileWithProperties(unittest.TestCase):
     def test_revision_set_none(self):
         self.core.revision = None
         self.assertEqual(None, self.core.revision)
+
+    def test_revision_getitem(self):
+        self.assertEqual(2, self.core["revision"], "File creator is not as expected")
+
+    def test_revision_setitem(self):
+        testing_value = 100
+        self.core["revision"] = testing_value
+        self.assertEqual(testing_value, self.core["revision"], "File creator is not as expected")
+
+    def test_revision_setitem_with_invalid_type_str(self):
+        with self.assertRaises(TypeError):
+            self.core["revision"] = "100"
+
+    def test_revision_setitem_set_none(self):
+        self.core["revision"] = None
+        self.assertEqual(None, self.core["revision"], "File creator is not as expected")
 
 
 class TestWordCoreXmlByFileWithoutProperties(unittest.TestCase):
@@ -303,6 +511,22 @@ class TestWordCoreXmlByFileWithoutProperties(unittest.TestCase):
         self.core.creator = None
         self.assertEqual(None, self.core.creator, )
 
+    def test_creator_getitem(self):
+        self.assertEqual(None, self.core["creator"], "File creator is not as expected")
+
+    def test_creator_setitem(self):
+        testing_value = "Beta user"
+        self.core["creator"] = testing_value
+        self.assertEqual(testing_value, self.core["creator"], "File creator is not as expected")
+
+    def test_creator_setitem_with_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.core["creator"] = 123
+
+    def test_creator_setitem_set_none(self):
+        self.core["creator"] = None
+        self.assertEqual(None, self.core["creator"], "File creator is not as expected")
+
     # Tests for WordCoreXml.last_modified_by
     def test_last_modified_by_read(self):
         self.assertEqual(None, self.core.last_modified_by)
@@ -320,6 +544,22 @@ class TestWordCoreXmlByFileWithoutProperties(unittest.TestCase):
         self.core.last_modified_by = None
         self.assertEqual(None, self.core.last_modified_by)
 
+    def test_last_modified_by_getitem(self):
+        self.assertEqual(None, self.core["lastModifiedBy"], "File creator is not as expected")
+
+    def test_last_modified_by_setitem(self):
+        testing_value = "Beta user"
+        self.core["lastModifiedBy"] = testing_value
+        self.assertEqual(testing_value, self.core["lastModifiedBy"], "File creator is not as expected")
+
+    def test_last_modified_by_setitem_with_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.core["lastModifiedBy"] = 123
+
+    def test_last_modified_by_setitem_set_none(self):
+        self.core["lastModifiedBy"] = None
+        self.assertEqual(None, self.core["lastModifiedBy"], "File creator is not as expected")
+
     # Tests for WordCoreXml.revision
     def test_revision_read(self):
         self.assertEqual(None, self.core.revision)
@@ -336,6 +576,22 @@ class TestWordCoreXmlByFileWithoutProperties(unittest.TestCase):
     def test_revision_set_none(self):
         self.core.revision = None
         self.assertEqual(None, self.core.revision)
+
+    def test_revision_getitem(self):
+        self.assertEqual(None, self.core["revision"], "File creator is not as expected")
+
+    def test_revision_setitem(self):
+        testing_value = 100
+        self.core["revision"] = testing_value
+        self.assertEqual(testing_value, self.core["revision"], "File creator is not as expected")
+
+    def test_revision_setitem_with_invalid_type_str(self):
+        with self.assertRaises(TypeError):
+            self.core["revision"] = "100"
+
+    def test_revision_setitem_set_none(self):
+        self.core["revision"] = None
+        self.assertEqual(None, self.core["revision"], "File creator is not as expected")
 
 
 class TestWordAppXmlByFileWithProperties(unittest.TestCase):
@@ -366,6 +622,22 @@ class TestWordAppXmlByFileWithProperties(unittest.TestCase):
         self.app.application = None
         self.assertEqual(None, self.app.application)
 
+    def test_application_getitem(self):
+        self.assertEqual("Microsoft Office Word", self.app["Application"], "File application is not as expected")
+
+    def test_application_setitem(self):
+        testing_value = "Beta app name"
+        self.app["Application"] = testing_value
+        self.assertEqual(testing_value, self.app["Application"], "File application is not as expected")
+
+    def test_application_setitem_with_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.app["Application"] = 123
+
+    def test_application_setitem_set_none(self):
+        self.app["Application"] = None
+        self.assertEqual(None, self.app["Application"])
+
     # Tests for WordAppXml.total_time
     def test_total_time_read(self):
         self.assertEqual(0, self.app.total_time)
@@ -382,6 +654,22 @@ class TestWordAppXmlByFileWithProperties(unittest.TestCase):
     def test_total_time_set_none(self):
         self.app.total_time = None
         self.assertEqual(None, self.app.total_time, "total_time property is not as expected")
+
+    def test_total_time_getitem(self):
+        self.assertEqual(0, self.app["TotalTime"], 'File total time is not as expected')
+
+    def test_total_time_setitem(self):
+        testing_value = 60
+        self.app["TotalTime"] = testing_value
+        self.assertEqual(testing_value, self.app["TotalTime"], "File total time is not as expected")
+
+    def test_total_time_setitem_with_invalid_type_str(self):
+        with self.assertRaises(TypeError):
+            self.app["TotalTime"] = "60"
+
+    def test_total_time_setitem_set_none(self):
+        self.app["TotalTime"] = None
+        self.assertEqual(None, self.app["TotalTime"], "File total time is not as expected")
 
 
 class TestWordAppXmlByFileWithoutProperties(unittest.TestCase):
@@ -412,6 +700,22 @@ class TestWordAppXmlByFileWithoutProperties(unittest.TestCase):
         self.app.application = None
         self.assertEqual(None, self.app.application, "application property is not as expected")
 
+    def test_application_getitem(self):
+        self.assertEqual(None, self.app["Application"], "File application is not as expected")
+
+    def test_application_setitem(self):
+        testing_value = "Beta application name"
+        self.app["Application"] = testing_value
+        self.assertEqual(testing_value, self.app["Application"], "File application is not as expected")
+
+    def test_application_setitem_with_invalid_type_int(self):
+        with self.assertRaises(TypeError):
+            self.app["Application"] = 123
+
+    def test_application_setitem_set_none(self):
+        self.app["Application"] = None
+        self.assertEqual(None, self.app["Application"])
+
     # Tests for WordAppXml.total_time
     def test_total_time_read(self):
         self.assertEqual(0, self.app.total_time)
@@ -428,6 +732,22 @@ class TestWordAppXmlByFileWithoutProperties(unittest.TestCase):
     def test_total_time_set_none(self):
         self.app.total_time = None
         self.assertEqual(None, self.app.total_time, "total_time property is not as expected")
+
+    def test_total_time_getitem(self):
+        self.assertEqual(0, self.app["TotalTime"], 'File total time is not as expected')
+
+    def test_total_time_setitem(self):
+        testing_value = 60
+        self.app["TotalTime"] = testing_value
+        self.assertEqual(testing_value, self.app["TotalTime"], "File total time is not as expected")
+
+    def test_total_time_setitem_with_invalid_type_str(self):
+        with self.assertRaises(TypeError):
+            self.app["TotalTime"] = "60"
+
+    def test_total_time_setitem_set_none(self):
+        self.app["TotalTime"] = None
+        self.assertEqual(None, self.app["TotalTime"], "File total time is not as expected")
 
 
 if __name__ == '__main__':
