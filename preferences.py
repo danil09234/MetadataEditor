@@ -37,7 +37,10 @@ class NewCommandPreferences:
     @property
     def __preferences(self) -> dict:
         with open(self.__preferences_filepath, "r") as yaml_file:
-            preferences_dict = yaml.safe_load(yaml_file)
+            try:
+                preferences_dict = yaml.safe_load(yaml_file)
+            except yaml.YAMLError:
+                raise PreferenceNotFoundError
         return preferences_dict
 
     @property
@@ -93,7 +96,10 @@ class PrivetSmirnovoyPreference:
     @property
     def __preferences(self) -> dict:
         with open(self.__preferences_filepath, "r") as yaml_file:
-            preferences_dict = yaml.safe_load(yaml_file)
+            try:
+                preferences_dict = yaml.safe_load(yaml_file)
+            except yaml.YAMLError:
+                raise PreferenceNotFoundError
         return preferences_dict
 
     @property
