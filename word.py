@@ -424,7 +424,7 @@ class WordAppXml:
     @property
     def total_time(self) -> int | None:
         total_time = self.__get_property("TotalTime")
-        if total_time is None:
+        if total_time is None or total_time == "0":
             return None
         else:
             return int(total_time)
@@ -435,7 +435,7 @@ class WordAppXml:
             case int():
                 self.__set_property(WordAppProperty("TotalTime", str(value)))
             case None:
-                self.__set_property(WordAppProperty("TotalTime", ""))
+                self.__set_property(WordAppProperty("TotalTime", "0"))
             case _:
                 raise TypeError("WordAppXml.total_time should be int"
                                 f'(not {type(value)})')

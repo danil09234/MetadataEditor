@@ -2,6 +2,7 @@ import pathlib
 import sys
 import os
 from threading import Thread
+from typing import Iterable
 
 from kivy import utils, Config
 from kivy.clock import Clock, mainthread
@@ -89,7 +90,7 @@ class WidgetChangeAnimation:
             opacity=0,
             duration=0.3
         )
-        animation.bind(on_complete=lambda *_: self.new_widget_add())  # )
+        animation.bind(on_complete=lambda *_: self.new_widget_add())
         animation.start(self.old_widget)
 
     def new_widget_animation(self):
@@ -138,16 +139,143 @@ class WidgetChangePropertiesAnimation:
         self.setter = setter
 
 
+class TextInputDefaultValue:
+    @property
+    def can_set_none(self):
+        return self.__can_set_none
+
+    def __can_set_none_setter(self, value):
+        match value:
+            case bool():
+                self.__can_set_none = value
+            case _:
+                raise TypeError
+
+    @property
+    def input_name(self) -> str:
+        return self.__input_name
+
+    def __input_name_setter(self, value: str) -> None:
+        match value:
+            case str():
+                self.__input_name = value
+            case _:
+                raise TypeError
+
+    @property
+    def input_object(self):
+        return self.__input_object
+
+    @input_object.setter
+    def input_object(self, value):
+        self.__input_object = value
+
+    @property
+    def input_value(self) -> str | None:
+        return self.__input_value
+
+    @input_value.setter
+    def input_value(self, value: str | None):
+        match value:
+            case str() | None:
+                self.__input_value = value
+            case _:
+                raise TypeError
+
+    @property
+    def changed(self) -> bool:
+        if self.input_value is None and self.input_object.text == "":
+            return False
+        elif self.input_value != self.input_object.text:
+            if self.can_set_none:
+                return True
+            elif self.input_object.text != "":
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    @mainthread
+    def change_text_input_text(self, text):
+        self.input_object.text = str(text)
+
+    def apply_changes(self):
+        if self.input_object.text == "":
+            self.input_value = None
+            if not self.can_set_none:
+                self.change_text_input_text("0")
+                self.input_value = "0"
+        else:
+            self.input_value = self.input_object.text
+
+    def __init__(self, input_name: str, input_object, input_value: str | None = None, can_set_none: bool = True):
+        self.__can_set_none_setter(can_set_none)
+        self.__input_name_setter(input_name)
+        self.input_object = input_object
+        self.input_value = input_value
+
+
+class TextInputsDefaultValues:
+    @property
+    def changed(self) -> bool:
+        for value in self.__values:
+            if value.changed:
+                return True
+
+    def apply_all_changes(self):
+        if self.changed:
+            for value in self.__values:
+                value.apply_changes()
+
+    def __iter__(self):
+        return iter(self.__values)
+
+    def __init__(self, values: Iterable[TextInputDefaultValue]):
+        self.__values = []
+        for value in values:
+            self.__values.append(value)
+
+
 class FileDragAndDropper(BoxLayout):
     def update_info_widget(self):
         self.__state_info_box_layout.info_label_text = f'Word file "{self.current_working_file.name}"'
         self.__state_info_box_layout.image_source = "images/word_icon.png"
         self.__state_info_box_layout.drag_and_drop_label_bg_color = utils.get_color_from_hex("5ec6ff")
 
+    @mainthread
     def set_state(self, state):
         match state, self.current_state:
-            case str("label"), str("info") | None:
+            case str("label"), None:
                 self.add_widget(self.__state_label_box_layout)
+                self.current_state = "label"
+            case str("label"), str("info"):
+                change_widget_animation = WidgetChangeAnimation(
+                    parent_widget=self,
+                    old_widget=self.__state_info_box_layout,
+                    new_widget=self.__state_label_box_layout,
+                )
+                change_widget_animation.start()
+
+                self.default_text_input_values = None
+
+                self.reset_button.disabled = True
+                self.send_hello_button.disabled = True
+                self.save_button.disabled = True
+
+                self.creator_text_input.disabled = True
+                self.last_modified_by_text_input.disabled = True
+                self.revision_text_input.disabled = True
+                self.application_text_input.disabled = True
+                self.editing_time_text_input.disabled = True
+
+                self.creator_text_input.text = ""
+                self.last_modified_by_text_input.text = ""
+                self.revision_text_input.text = ""
+                self.application_text_input.text = ""
+                self.editing_time_text_input.text = ""
+
+                self.current_working_file = None
                 self.current_state = "label"
             case str("info"), str("label") | None:
                 self.__state_info_box_layout.info_label_text = f'Word file "{self.current_working_file.name}"'
@@ -178,7 +306,7 @@ class FileDragAndDropper(BoxLayout):
         self.revision_text_input = None
         self.application_text_input = None
         self.editing_time_text_input = None
-        self.default_text_input_values = {}
+        self.default_text_input_values = None
 
         self.reset_button = None
         self.send_hello_button = None
@@ -284,53 +412,74 @@ class FileDragAndDropper(BoxLayout):
         self.current_working_file = file
         metadata = word.Metadata(self.current_working_file)
 
-        if self.creator_text_input is not None:
-            if (creator := metadata.creator) is not None:
-                self.creator_text_input.text = creator
-            else:
-                self.creator_text_input.text = ""
-            self.default_text_input_values.update({"creator": creator})
+        if (creator := metadata.creator) is None:
+            creator = ""
 
-        if self.last_modified_by_text_input is not None:
-            if (last_modified_by := metadata.last_modified_by) is not None:
-                self.last_modified_by_text_input.text = last_modified_by
-            else:
-                self.last_modified_by_text_input.text = ""
-            self.default_text_input_values.update({"last_modified_by": last_modified_by})
+        if (last_modified_by := metadata.last_modified_by) is None:
+            last_modified_by = ""
 
-        if self.revision_text_input is not None:
-            if (revision := metadata.revision) is not None:
-                self.revision_text_input.text = str(revision)
-            else:
-                self.revision_text_input.text = ""
-            self.default_text_input_values.update({"revision": revision})
+        if (revision := metadata.revision) is None:
+            revision = ""
+        else:
+            revision = str(revision)
 
-        if self.application_text_input is not None:
-            if (application_name := metadata.application_name) is not None:
-                self.application_text_input.text = application_name
-            else:
-                self.application_text_input.text = ""
-            self.default_text_input_values.update({"application_name": application_name})
+        if (application := metadata.application_name) is None:
+            application = ""
 
-        if self.editing_time_text_input is not None:
-            if (editing_time := metadata.editing_time) is not None:
-                self.editing_time_text_input.text = str(editing_time)
-            else:
-                self.editing_time_text_input.text = ""
-            self.default_text_input_values.update({"editing_time": editing_time})
+        if (editing_time := metadata.editing_time) is None:
+            editing_time = "0"
+        else:
+            editing_time = str(editing_time)
+
+        self.creator_text_input.text = creator
+        self.last_modified_by_text_input.text = last_modified_by
+        self.revision_text_input.text = revision
+        self.application_text_input.text = application
+        self.editing_time_text_input.text = editing_time
+
+        self.default_text_input_values = TextInputsDefaultValues(
+            [
+                TextInputDefaultValue(
+                    input_name="creator",
+                    input_object=self.creator_text_input,
+                    input_value=self.creator_text_input.text
+                ),
+                TextInputDefaultValue(
+                    input_name="lastModifiedBy",
+                    input_object=self.last_modified_by_text_input,
+                    input_value=self.last_modified_by_text_input.text
+                ),
+                TextInputDefaultValue(
+                    input_name="revision",
+                    input_object=self.revision_text_input,
+                    input_value=self.revision_text_input.text
+                ),
+                TextInputDefaultValue(
+                    input_name="Application",
+                    input_object=self.application_text_input,
+                    input_value=self.application_text_input.text
+                ),
+                TextInputDefaultValue(
+                    input_name="TotalTime",
+                    input_object=self.editing_time_text_input,
+                    input_value=self.editing_time_text_input.text,
+                    can_set_none=False
+                )
+            ]
+        )
 
         self.initialize_word_file_animation()
 
-        if self.reset_button is not None:
-            self.reset_button.disabled = False
-        if self.send_hello_button is not None:
-            self.send_hello_button.disabled = False
+        self.reset_button.disabled = False
+        self.send_hello_button.disabled = False
 
         self.creator_text_input.disabled = False
         self.last_modified_by_text_input.disabled = False
         self.revision_text_input.disabled = False
         self.application_text_input.disabled = False
         self.editing_time_text_input.disabled = False
+
+        self.save_button.disabled = True
 
     def _on_file_drop(self, window, file_path, x, y):
         if window.children[0].current != "Antismirnova":
@@ -441,33 +590,16 @@ class MainUi(Screen):
         if application_text_input is not None:
             self.ids.application_text_input.text = application_text_input
 
-    def get_changes_dict(self) -> dict:
-        default_values = self.ids.file_drag_and_dropper.default_text_input_values
-
-        changes = {}
-        try:
-            if default_values["creator"] != self.ids.creator_text_input.text:
-                changes.update({"creator": self.ids.creator_text_input.text})
-            if default_values["last_modified_by"] != self.ids.last_modified_by_text_input.text:
-                changes.update({"last_modified_by": self.ids.last_modified_by_text_input.text})
-            if str(default_values["revision"]) != (revision := self.ids.revision_text_input.text):
-                if revision == "":
-                    changes.update({"revision": None})
-                else:
-                    changes.update({"revision": int(self.ids.revision_text_input.text)})
-            if default_values["application_name"] != self.ids.application_text_input.text:
-                changes.update({"application_name": self.ids.application_text_input.text})
-            if str(default_values["editing_time"]) != (editing_time := self.ids.editing_time_text_input.text):
-                if editing_time == "":
-                    changes.update({editing_time: None})
-                else:
-                    changes.update({"editing_time": int(self.ids.editing_time_text_input.text)})
-        except KeyError:
-            pass
-        return changes
+    @property
+    def default_values(self) -> TextInputsDefaultValues:
+        return self.ids.file_drag_and_dropper.default_text_input_values
 
     def check_values_for_difference(self):
-        if len(self.get_changes_dict()) != 0:
+        if self.default_values is None:
+            self.ids.save_button.disabled = True
+            return
+
+        if self.default_values.changed:
             self.ids.save_button.disabled = False
         else:
             self.ids.save_button.disabled = True
@@ -486,43 +618,24 @@ class MainUi(Screen):
 
         metadata = word.Metadata(current_file)
 
-        if (changes_dict := self.get_changes_dict()) == {}:
+        if not self.default_values.changed:
             return
 
-        for key, value in changes_dict.items():
-            match key, value:
-                case "creator", str():
-                    metadata.creator = value
-                    self.ids.file_drag_and_dropper.default_text_input_values["creator"] = value
-                case "creator", None:
-                    metadata.creator = ""
-                    self.ids.file_drag_and_dropper.default_text_input_values["creator"] = None
-                case "last_modified_by", str():
-                    metadata.last_modified_by = value
-                    self.ids.file_drag_and_dropper.default_text_input_values["last_modified_by"] = value
-                case "last_modified_by", None:
-                    metadata.last_modified_by = ""
-                    self.ids.file_drag_and_dropper.default_text_input_values["last_modified_by"] = None
-                case "revision", int():
-                    metadata.revision = value
-                    self.ids.file_drag_and_dropper.default_text_input_values["revision"] = value
-                case "revision", None:
-                    metadata.revision = 1
-                    self.update_text_inputs(editing_time_text_input="1")
-                    self.ids.file_drag_and_dropper.default_text_input_values["revision"] = 1
-                case "application_name", str():
-                    metadata.application_name = value
-                    self.ids.file_drag_and_dropper.default_text_input_values["application_name"] = value
-                case "application_name", None:
-                    metadata.application_name = ""
-                    self.ids.file_drag_and_dropper.default_text_input_values["application_name"] = None
-                case "editing_time", int():
-                    metadata.editing_time = value
-                    self.ids.file_drag_and_dropper.default_text_input_values["editing_time"] = value
-                case "editing_time", None:
-                    metadata.editing_time = 0
-                    self.update_text_inputs(editing_time_text_input="0")
-                    self.ids.file_drag_and_dropper.default_text_input_values["editing_time"] = 0
+        for value in self.default_values:
+            value.apply_changes()
+            if not current_file.exists():
+                self.ids.file_drag_and_dropper.set_state("label")
+                break
+            match value.input_name:
+                case str("revision" | "TotalTime"):
+                    match value.input_value:
+                        case str():
+                            metadata[value.input_name] = int(value.input_value)
+                        case None:
+                            metadata[value.input_name] = value.input_value
+                case _:
+                    metadata[value.input_name] = value.input_value
+
         self.check_values_for_difference()
 
     def reset_data_button_pressed(self):
@@ -652,6 +765,8 @@ class MainUi(Screen):
                                                 f"Please, check {PREFERENCES_FILEPATH.name}")
         else:
             self.hide_send_hello_button_warning()
+
+        self.check_values_for_difference()
 
     def __init__(self, **kwargs):
         super(MainUi, self).__init__(**kwargs)
