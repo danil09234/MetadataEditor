@@ -24,21 +24,8 @@ import preferences
 import word
 
 
-Window.minimum_width = 830
-Window.minimum_height = 600
-
-
-# Constants
-PREFERENCES_FILEPATH = pathlib.Path("preferences.yaml")
-# Command "new"
-DEFAULT_WORD_EDITING_TIME = 0
-DEFAULT_WORD_REVISION = 1
-DEFAULT_WORD_CREATOR = "admin"
-DEFAULT_WORD_LAST_MODIFIED_BY = "admin"
-DEFAULT_WORD_APPLICATION_NAME = "Microsoft Office Word"
-# Command "privet_smirnovoy"
-PRIVET_SMIRNOVOY_EDITING_TIME = 599940
-PRIVET_SMIRNOVOY_REVISION = 9999999
+Window.minimum_width = preferences.GUI_MINIMUM_WIDTH
+Window.minimum_height = preferences.GUI_MINIMUM_HEIGHT
 
 
 def label_text_wrap(text: str, label_width, label) -> str:
@@ -646,53 +633,53 @@ class MainUi(Screen):
         if self.ids.file_drag_and_dropper.current_working_file is None:
             return
 
-        new_command_preferences = preferences.NewCommandPreferences(PREFERENCES_FILEPATH)
+        new_command_preferences = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH)
 
         completed_with_errors = False
 
-        editing_time = DEFAULT_WORD_EDITING_TIME
+        editing_time = preferences.DEFAULT_WORD_EDITING_TIME
         try:
             editing_time = new_command_preferences.editing_time
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
         except FileNotFoundError:
-            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
 
-        revision = DEFAULT_WORD_REVISION
+        revision = preferences.DEFAULT_WORD_REVISION
         try:
             revision = new_command_preferences.revision
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
         except FileNotFoundError:
-            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
 
-        creator = DEFAULT_WORD_CREATOR
+        creator = preferences.DEFAULT_WORD_CREATOR
         try:
             creator = new_command_preferences.creator
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
         except FileNotFoundError:
-            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
 
-        last_modified_by = DEFAULT_WORD_LAST_MODIFIED_BY
+        last_modified_by = preferences.DEFAULT_WORD_LAST_MODIFIED_BY
         try:
             last_modified_by = new_command_preferences.last_modified_by
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
         except FileNotFoundError:
-            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
 
-        application_name = DEFAULT_WORD_APPLICATION_NAME
+        application_name = preferences.DEFAULT_WORD_APPLICATION_NAME
         try:
             application_name = new_command_preferences.application
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
         except FileNotFoundError:
-            self.show_reset_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
 
         self.update_text_inputs(
@@ -704,7 +691,7 @@ class MainUi(Screen):
         )
 
         if completed_with_errors:
-            self.show_reset_button_warning(f"Some preferences was not found\nPlease, check {PREFERENCES_FILEPATH.name}")
+            self.show_reset_button_warning(f"Some preferences was not found\nPlease, check {preferences.PREFERENCES_FILEPATH.name}")
         else:
             self.hide_reset_button_warning()
 
@@ -713,7 +700,7 @@ class MainUi(Screen):
         send_hello_process.start()
 
     def send_hello(self):
-        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference(PREFERENCES_FILEPATH)
+        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH)
 
         completed_with_errors = False
 
@@ -725,7 +712,7 @@ class MainUi(Screen):
         except preferences.InvalidPreferenceValueError:
             completed_with_errors = True
         except FileNotFoundError:
-            self.show_send_hello_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
 
         random_modifiers_string = None
@@ -736,7 +723,7 @@ class MainUi(Screen):
         except preferences.InvalidPreferenceValueError:
             completed_with_errors = True
         except FileNotFoundError:
-            self.show_send_hello_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
 
         random_application = None
@@ -745,12 +732,12 @@ class MainUi(Screen):
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
         except FileNotFoundError:
-            self.show_send_hello_button_warning(f'File "{PREFERENCES_FILEPATH.name}" not found.')
+            self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
 
         self.update_text_inputs(
-            editing_time_text_input=str(PRIVET_SMIRNOVOY_EDITING_TIME),
-            revision_text_input=str(PRIVET_SMIRNOVOY_REVISION),
+            editing_time_text_input=str(preferences.PRIVET_SMIRNOVOY_EDITING_TIME),
+            revision_text_input=str(preferences.PRIVET_SMIRNOVOY_REVISION),
         )
 
         if random_creators_string is not None:
@@ -762,7 +749,7 @@ class MainUi(Screen):
 
         if completed_with_errors:
             self.show_send_hello_button_warning(f"Some preferences was not found or invalid\n"
-                                                f"Please, check {PREFERENCES_FILEPATH.name}")
+                                                f"Please, check {preferences.PREFERENCES_FILEPATH.name}")
         else:
             self.hide_send_hello_button_warning()
 

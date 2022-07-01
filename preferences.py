@@ -4,6 +4,23 @@ import yaml
 from numpy import unique
 
 
+# Constants
+# GUI window preferences
+GUI_MINIMUM_WIDTH = 830
+GUI_MINIMUM_HEIGHT = 600
+# Preferences file
+PREFERENCES_FILEPATH = pathlib.Path("preferences.yaml")
+# Command "new"
+DEFAULT_WORD_EDITING_TIME = 0
+DEFAULT_WORD_REVISION = 1
+DEFAULT_WORD_CREATOR = "admin"
+DEFAULT_WORD_LAST_MODIFIED_BY = "admin"
+DEFAULT_WORD_APPLICATION_NAME = "Microsoft Office Word"
+# Command "privet_smirnovoy"
+PRIVET_SMIRNOVOY_EDITING_TIME = 599940
+PRIVET_SMIRNOVOY_REVISION = 9999999
+
+
 class PreferenceNotFoundError(Exception):
     pass
 

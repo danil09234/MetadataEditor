@@ -4,18 +4,6 @@ import click
 import preferences
 import logging
 
-# Constants
-PREFERENCES_FILEPATH = pathlib.Path("preferences.yaml")
-# Command "new"
-DEFAULT_WORD_EDITING_TIME = 0
-DEFAULT_WORD_REVISION = 1
-DEFAULT_WORD_CREATOR = "admin"
-DEFAULT_WORD_LAST_MODIFIED_BY = "admin"
-DEFAULT_WORD_APPLICATION_NAME = "Microsoft Office Word"
-# Command "privet_smirnovoy"
-PRIVET_SMIRNOVOY_EDITING_TIME = 599940
-PRIVET_SMIRNOVOY_REVISION = 9999999
-
 
 @click.group()
 @click.version_option(version="Beta 1.2")
@@ -140,63 +128,63 @@ def new(file: pathlib.Path):
         return
     if file.suffix == ".docx":
         word_file_metadata = word.Metadata(file)
-        new_command_preferences = preferences.NewCommandPreferences(PREFERENCES_FILEPATH)
+        new_command_preferences = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH)
 
         completed_with_errors = False
 
-        editing_time = DEFAULT_WORD_EDITING_TIME
+        editing_time = preferences.DEFAULT_WORD_EDITING_TIME
         try:
             editing_time = new_command_preferences.editing_time
         except preferences.PreferenceNotFoundError:
             click.secho('Preference for "editing time" not found. '
-                        f'Default value "{DEFAULT_WORD_EDITING_TIME}" used.', fg="red")
+                        f'Default value "{preferences.DEFAULT_WORD_EDITING_TIME}" used.', fg="red")
             completed_with_errors = True
         except FileNotFoundError:
-            click.secho(f'File "{PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
 
-        revision = DEFAULT_WORD_REVISION
+        revision = preferences.DEFAULT_WORD_REVISION
         try:
             revision = new_command_preferences.revision
         except preferences.PreferenceNotFoundError:
             click.secho('Preference for "revision" not found. '
-                        f'Default value "{DEFAULT_WORD_REVISION}" used.', fg="red")
+                        f'Default value "{preferences.DEFAULT_WORD_REVISION}" used.', fg="red")
             completed_with_errors = True
         except FileNotFoundError:
-            click.secho(f'File "{PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
 
-        creator = DEFAULT_WORD_CREATOR
+        creator = preferences.DEFAULT_WORD_CREATOR
         try:
             creator = new_command_preferences.creator
         except preferences.PreferenceNotFoundError:
             click.secho('Preference for "creator" not found. '
-                        f'Default value "{DEFAULT_WORD_CREATOR}" used.', fg="red")
+                        f'Default value "{preferences.DEFAULT_WORD_CREATOR}" used.', fg="red")
             completed_with_errors = True
         except FileNotFoundError:
-            click.secho(f'File "{PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
 
-        last_modified_by = DEFAULT_WORD_LAST_MODIFIED_BY
+        last_modified_by = preferences.DEFAULT_WORD_LAST_MODIFIED_BY
         try:
             last_modified_by = new_command_preferences.last_modified_by
         except preferences.PreferenceNotFoundError:
             click.secho('Preference for "last modified by" not found. '
-                        f'Default value "{DEFAULT_WORD_LAST_MODIFIED_BY}" used.', fg="red")
+                        f'Default value "{preferences.DEFAULT_WORD_LAST_MODIFIED_BY}" used.', fg="red")
             completed_with_errors = True
         except FileNotFoundError:
-            click.secho(f'File "{PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
 
-        application_name = DEFAULT_WORD_APPLICATION_NAME
+        application_name = preferences.DEFAULT_WORD_APPLICATION_NAME
         try:
             application_name = new_command_preferences.application
         except preferences.PreferenceNotFoundError:
             click.secho('Preference for "application name" not found. '
-                        f'Default value "{DEFAULT_WORD_APPLICATION_NAME}" used.', fg="red")
+                        f'Default value "{preferences.DEFAULT_WORD_APPLICATION_NAME}" used.', fg="red")
             completed_with_errors = True
         except FileNotFoundError:
-            click.secho(f'File "{PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
 
         word_file_metadata.editing_time = editing_time
@@ -222,7 +210,7 @@ def privet_smirnovoy(file: pathlib.Path):
         return
     if file.suffix == ".docx":
         word_file_metadata = word.Metadata(file)
-        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference(PREFERENCES_FILEPATH)
+        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH)
 
         completed_with_errors = False
 
@@ -236,7 +224,7 @@ def privet_smirnovoy(file: pathlib.Path):
             click.secho('Preference "creators number" is invalid. Maybe too big?', fg="red")
             completed_with_errors = True
         except FileNotFoundError:
-            click.secho(f'File "{PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
 
         random_modifiers_string = None
@@ -249,7 +237,7 @@ def privet_smirnovoy(file: pathlib.Path):
             click.secho('Preference "modifiers number" is invalid. Maybe too big?', fg="red")
             completed_with_errors = True
         except FileNotFoundError:
-            click.secho(f'File "{PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
 
         random_application = None
@@ -259,11 +247,11 @@ def privet_smirnovoy(file: pathlib.Path):
             click.secho('Preference for "application name" not found. ', fg="red")
             completed_with_errors = True
         except FileNotFoundError:
-            click.secho(f'File "{PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
 
-        word_file_metadata.editing_time = PRIVET_SMIRNOVOY_EDITING_TIME
-        word_file_metadata.revision = PRIVET_SMIRNOVOY_REVISION
+        word_file_metadata.editing_time = preferences.PRIVET_SMIRNOVOY_EDITING_TIME
+        word_file_metadata.revision = preferences.PRIVET_SMIRNOVOY_REVISION
         if random_creators_string is not None:
             word_file_metadata.creator = random_creators_string
         if random_modifiers_string is not None:
