@@ -123,6 +123,7 @@ def change_editing_time(file: pathlib.Path, new_editing_time: str):
 @click.command()
 @click.argument("file", type=pathlib.Path)
 def new(file: pathlib.Path):
+    """Set all metadata fields to default values set in preferences.yaml"""
     if file.exists() is False:
         click.echo(click.style(f"File {file} was not found.", fg="red"))
         return
@@ -205,6 +206,7 @@ def new(file: pathlib.Path):
 @click.command()
 @click.argument("file", type=pathlib.Path)
 def privet_smirnovoy(file: pathlib.Path):
+    """Send hello to Smirnova according to preferences in preferences.yaml file"""
     if file.exists() is False:
         click.echo(click.style(f"File {file} was not found.", fg="red"))
         return
@@ -270,6 +272,7 @@ def privet_smirnovoy(file: pathlib.Path):
 
 @click.command()
 def open_gui():
+    """Open graphical user interface"""
     logging.disable(logging.CRITICAL)
     import gui
     gui.AntismirnovaApp().run()
