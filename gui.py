@@ -469,7 +469,14 @@ class FileDragAndDropper(BoxLayout):
         self.save_button.disabled = True
 
     def _on_file_drop(self, window, file_path, x, y):
-        if window.children[0].current != "Antismirnova":
+        for children in window.children:
+            match children:
+                case ScreenManagement():
+                    if children.current != "Antismirnova":
+                        return
+                    else:
+                        break
+        else:
             return
 
         if self.current_state == "label":
