@@ -10,7 +10,7 @@ from kivy.resources import resource_add_path, resource_find
 
 
 @click.group()
-@click.version_option(version="Beta 1.2")
+@click.version_option(version="Release 1.0")
 def main():
     pass
 
