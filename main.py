@@ -6,7 +6,6 @@ import logging
 
 import sys
 import os
-from kivy.resources import resource_add_path, resource_find
 
 
 @click.group()
@@ -277,7 +276,6 @@ def privet_smirnovoy(file: pathlib.Path):
 @click.command()
 def open_gui():
     """Open graphical user interface"""
-    logging.disable(logging.CRITICAL)
     import gui
     gui.AntismirnovaApp().run()
 
@@ -294,6 +292,9 @@ main.add_command(open_gui)
 
 
 if __name__ == "__main__":
+    logging.disable(logging.CRITICAL)
+
+    from kivy.resources import resource_add_path, resource_find
     if hasattr(sys, '_MEIPASS'):
         resource_add_path(os.path.join(sys._MEIPASS))
     main()
