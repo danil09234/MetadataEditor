@@ -1,12 +1,9 @@
 import pathlib
-import sys
-import os
 from threading import Thread
 from typing import Iterable
 
 from kivy import utils, Config
 from kivy.clock import Clock, mainthread
-from kivy.resources import resource_add_path, resource_find
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.screenmanager import Screen
@@ -698,7 +695,8 @@ class MainUi(Screen):
         )
 
         if completed_with_errors:
-            self.show_reset_button_warning(f"Some preferences was not found\nPlease, check {preferences.PREFERENCES_FILEPATH.name}")
+            self.show_reset_button_warning(f"Some preferences was not found\n"
+                                           f"Please, check {preferences.PREFERENCES_FILEPATH.name}")
         else:
             self.hide_reset_button_warning()
 
@@ -772,7 +770,5 @@ class AntismirnovaApp(MDApp):
 
 
 if __name__ == "__main__":
-    if hasattr(sys, '_MEIPASS'):
-        resource_add_path(os.path.join(sys._MEIPASS))
     Config.set('graphics', 'maxfps', 0)
     AntismirnovaApp().run()

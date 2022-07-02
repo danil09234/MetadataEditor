@@ -4,6 +4,10 @@ import click
 import preferences
 import logging
 
+import sys
+import os
+from kivy.resources import resource_add_path, resource_find
+
 
 @click.group()
 @click.version_option(version="Beta 1.2")
@@ -290,4 +294,6 @@ main.add_command(open_gui)
 
 
 if __name__ == "__main__":
+    if hasattr(sys, '_MEIPASS'):
+        resource_add_path(os.path.join(sys._MEIPASS))
     main()

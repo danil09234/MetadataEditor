@@ -12,8 +12,8 @@ import pytz
 __word_file_suffixes = [".docx"]
 
 # Constants
-DEFAULT_WORD_CORE_XML_FILEPATH = pathlib.Path("default_word_core.xml")
-DEFAULT_WORD_APP_XML_FILEPATH = pathlib.Path("default_word_app.xml")
+DEFAULT_WORD_CORE_XML_FILEPATH = pathlib.Path(__file__).resolve().with_name("default_word_core.xml")
+DEFAULT_WORD_APP_XML_FILEPATH = pathlib.Path(__file__).resolve().with_name("default_word_app.xml")
 
 W3CDTF_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 RE_W3CDTF = "(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.(\d{2}))?Z?"
