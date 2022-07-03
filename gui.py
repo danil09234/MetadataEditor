@@ -530,6 +530,19 @@ class ScreenManagement(ScreenManager):
 
 
 class MainUi(Screen):
+    def check_preferences(self) -> None:
+        new_command = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH)
+        privet_smirnovoy_command = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH)
+        if not new_command.valid:
+            self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+        else:
+            self.hide_reset_button_warning()
+
+        if not privet_smirnovoy_command.valid:
+            self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+        else:
+            self.hide_send_hello_button_warning()
+
     @mainthread
     def show_reset_button_warning(self, text: str | None = None):
         if text is not None:
@@ -540,6 +553,7 @@ class MainUi(Screen):
         )
         animation.start(self.ids.reset_button_warning_icon)
 
+    @mainthread
     def hide_reset_button_warning(self):
         animation = Animation(
             opacity=0,
@@ -547,6 +561,7 @@ class MainUi(Screen):
         )
         animation.start(self.ids.reset_button_warning_icon)
 
+    @mainthread
     def show_send_hello_button_warning(self, text: str | None = None):
         if text is not None:
             self.ids.send_hello_button_warning_icon.tooltip_text = text
@@ -556,6 +571,7 @@ class MainUi(Screen):
         )
         animation.start(self.ids.send_hello_button_warning_icon)
 
+    @mainthread
     def hide_send_hello_button_warning(self):
         animation = Animation(
             opacity=0,
@@ -646,6 +662,9 @@ class MainUi(Screen):
             editing_time = new_command_preferences.editing_time
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            return
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
@@ -655,6 +674,9 @@ class MainUi(Screen):
             revision = new_command_preferences.revision
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            return
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
@@ -664,6 +686,9 @@ class MainUi(Screen):
             creator = new_command_preferences.creator
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            return
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
@@ -673,6 +698,9 @@ class MainUi(Screen):
             last_modified_by = new_command_preferences.last_modified_by
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            return
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
@@ -682,6 +710,9 @@ class MainUi(Screen):
             application_name = new_command_preferences.application
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            return
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
@@ -716,6 +747,9 @@ class MainUi(Screen):
             completed_with_errors = True
         except preferences.InvalidPreferenceValueError:
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            return
         except FileNotFoundError:
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
@@ -727,6 +761,9 @@ class MainUi(Screen):
             completed_with_errors = True
         except preferences.InvalidPreferenceValueError:
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            return
         except FileNotFoundError:
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
@@ -736,6 +773,9 @@ class MainUi(Screen):
             random_application = privet_smirnovoy_preferences.random_application
         except preferences.PreferenceNotFoundError:
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            return
         except FileNotFoundError:
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
@@ -760,7 +800,15 @@ class MainUi(Screen):
 
         self.check_values_for_difference()
 
+    def on_leave(self, *args):
+        self.check_preferences_event.stop_clock()
+
+    def on_enter(self, *args):
+        self.check_preferences_event = Clock.schedule_interval(lambda *_: self.check_preferences(), 3)
+        self.check_preferences_event()
+
     def __init__(self, **kwargs):
+        self.check_preferences_event = None
         super(MainUi, self).__init__(**kwargs)
 
 

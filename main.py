@@ -143,6 +143,9 @@ def new(file: pathlib.Path):
             click.secho('Preference for "editing time" not found. '
                         f'Default value "{preferences.DEFAULT_WORD_EDITING_TIME}" used.', fg="red")
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            click.secho(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.', fg="red")
+            return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
@@ -154,6 +157,9 @@ def new(file: pathlib.Path):
             click.secho('Preference for "revision" not found. '
                         f'Default value "{preferences.DEFAULT_WORD_REVISION}" used.', fg="red")
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            click.secho(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.', fg="red")
+            return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
@@ -165,6 +171,9 @@ def new(file: pathlib.Path):
             click.secho('Preference for "creator" not found. '
                         f'Default value "{preferences.DEFAULT_WORD_CREATOR}" used.', fg="red")
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            click.secho(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.', fg="red")
+            return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
@@ -176,6 +185,9 @@ def new(file: pathlib.Path):
             click.secho('Preference for "last modified by" not found. '
                         f'Default value "{preferences.DEFAULT_WORD_LAST_MODIFIED_BY}" used.', fg="red")
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            click.secho(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.', fg="red")
+            return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
@@ -187,6 +199,9 @@ def new(file: pathlib.Path):
             click.secho('Preference for "application name" not found. '
                         f'Default value "{preferences.DEFAULT_WORD_APPLICATION_NAME}" used.', fg="red")
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            click.secho(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.', fg="red")
+            return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
@@ -228,6 +243,9 @@ def privet_smirnovoy(file: pathlib.Path):
         except preferences.InvalidPreferenceValueError:
             click.secho('Preference "creators number" is invalid. Maybe too big?', fg="red")
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            click.secho(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.', fg="red")
+            return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
@@ -241,6 +259,9 @@ def privet_smirnovoy(file: pathlib.Path):
         except preferences.InvalidPreferenceValueError:
             click.secho('Preference "modifiers number" is invalid. Maybe too big?', fg="red")
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            click.secho(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.', fg="red")
+            return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
@@ -251,6 +272,9 @@ def privet_smirnovoy(file: pathlib.Path):
         except preferences.PreferenceNotFoundError:
             click.secho('Preference for "application name" not found. ', fg="red")
             completed_with_errors = True
+        except preferences.InvalidPreferencesStructureError:
+            click.secho(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.', fg="red")
+            return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return

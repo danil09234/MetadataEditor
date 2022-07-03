@@ -29,6 +29,10 @@ class InvalidPreferenceValueError(Exception):
     pass
 
 
+class InvalidPreferencesStructureError(Exception):
+    pass
+
+
 class NewCommandPreferences:
     def __dump(self):
         with open(self.__preferences_filepath, "w") as yaml_file:
@@ -40,8 +44,16 @@ class NewCommandPreferences:
             try:
                 preferences_dict = yaml.safe_load(yaml_file)
             except yaml.YAMLError:
-                raise PreferenceNotFoundError
+                raise InvalidPreferencesStructureError
         return preferences_dict
+
+    @property
+    def valid(self) -> bool:
+        try:
+            _ = self.__preferences
+            return True
+        except InvalidPreferencesStructureError:
+            return False
 
     @property
     def application(self) -> str:
@@ -99,8 +111,16 @@ class PrivetSmirnovoyPreference:
             try:
                 preferences_dict = yaml.safe_load(yaml_file)
             except yaml.YAMLError:
-                raise PreferenceNotFoundError
+                raise InvalidPreferencesStructureError
         return preferences_dict
+
+    @property
+    def valid(self) -> bool:
+        try:
+            _ = self.__preferences
+            return True
+        except InvalidPreferencesStructureError:
+            return False
 
     @property
     def applications(self) -> list:
@@ -214,6 +234,12 @@ class PrivetSmirnovoyPreference:
 
 
 class Preferences:
+    @property
+    def valid(self) -> bool:
+        if self.new_command.valid and self.privet_smirnovoy.valid:
+            return True
+        return False
+
     @property
     def new_command(self):
         return self.__new_command_preferences
