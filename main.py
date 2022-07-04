@@ -132,7 +132,7 @@ def new(file: pathlib.Path):
         return
     if file.suffix == ".docx":
         word_file_metadata = word.Metadata(file)
-        new_command_preferences = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH)
+        new_command_preferences = preferences.NewCommandPreferences()
 
         completed_with_errors = False
 
@@ -230,7 +230,7 @@ def privet_smirnovoy(file: pathlib.Path):
         return
     if file.suffix == ".docx":
         word_file_metadata = word.Metadata(file)
-        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH)
+        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference()
 
         completed_with_errors = False
 

@@ -100,7 +100,7 @@ class NewCommandPreferences:
         except TypeError:
             raise PreferenceNotFoundError('Preferences section "new" is invalid')
 
-    def __init__(self, preferences_filepath: pathlib.Path):
+    def __init__(self, preferences_filepath: pathlib.Path = PREFERENCES_FILEPATH):
         self.__preferences_filepath = preferences_filepath
 
 
@@ -229,7 +229,7 @@ class PrivetSmirnovoyPreference:
         except TypeError:
             raise PreferenceNotFoundError('Preferences section "privet_smirnovoy" is invalid')
     
-    def __init__(self, preferences_filepath: pathlib.Path):
+    def __init__(self, preferences_filepath: pathlib.Path = PREFERENCES_FILEPATH):
         self.__preferences_filepath = preferences_filepath
 
 
@@ -248,6 +248,6 @@ class Preferences:
     def privet_smirnovoy(self):
         return self.__privet_smirnovoy_preferences
     
-    def __init__(self, preferences_filepath: pathlib.Path):
+    def __init__(self, preferences_filepath: pathlib.Path = PREFERENCES_FILEPATH):
         self.__new_command_preferences = NewCommandPreferences(preferences_filepath)
         self.__privet_smirnovoy_preferences = PrivetSmirnovoyPreference(preferences_filepath)

@@ -438,7 +438,7 @@ class FileDragAndDropper(BoxLayout):
         self.initialize_word_file_animation()
 
         try:
-            preferences_valid = preferences.Preferences(preferences.PREFERENCES_FILEPATH).valid
+            preferences_valid = preferences.Preferences().valid
             if preferences_valid:
                 self.reset_button.disabled = False
                 self.send_hello_button.disabled = False
@@ -524,7 +524,7 @@ class ScreenManagement(ScreenManager):
 class MainUi(Screen):
     def update_reset_metadata_button(self, preferences_valid: bool | None = None):
         if preferences_valid is None:
-            preferences_valid = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH).valid
+            preferences_valid = preferences.NewCommandPreferences().valid
 
         if preferences_valid:
             if self.default_values is not None:
@@ -536,7 +536,7 @@ class MainUi(Screen):
 
     def update_send_hello_button(self, preferences_valid: bool | None = None):
         if preferences_valid is None:
-            preferences_valid = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH).valid
+            preferences_valid = preferences.PrivetSmirnovoyPreference().valid
 
         if preferences_valid:
             if self.default_values is not None:
@@ -557,8 +557,8 @@ class MainUi(Screen):
             self.ids.save_button.disabled = True
 
     def check_preferences(self) -> None:
-        new_command = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH)
-        privet_smirnovoy_command = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH)
+        new_command = preferences.NewCommandPreferences()
+        privet_smirnovoy_command = preferences.PrivetSmirnovoyPreference()
         try:
             if not (preferences_valid := new_command.valid):
                 self.update_reset_metadata_button(preferences_valid)
@@ -691,7 +691,7 @@ class MainUi(Screen):
         if self.ids.file_drag_and_dropper.current_working_file is None:
             return
 
-        new_command_preferences = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH)
+        new_command_preferences = preferences.NewCommandPreferences()
 
         completed_with_errors = False
 
@@ -774,7 +774,7 @@ class MainUi(Screen):
         send_hello_process.start()
 
     def send_hello(self):
-        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH)
+        privet_smirnovoy_preferences = preferences.PrivetSmirnovoyPreference()
 
         completed_with_errors = False
 
