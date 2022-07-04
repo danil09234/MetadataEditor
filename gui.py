@@ -437,8 +437,17 @@ class FileDragAndDropper(BoxLayout):
 
         self.initialize_word_file_animation()
 
-        self.reset_button.disabled = False
-        self.send_hello_button.disabled = False
+        try:
+            preferences_valid = preferences.Preferences(preferences.PREFERENCES_FILEPATH).valid
+            if preferences_valid:
+                self.reset_button.disabled = False
+                self.send_hello_button.disabled = False
+            else:
+                self.reset_button.disabled = True
+                self.send_hello_button.disabled = True
+        except FileNotFoundError:
+            self.reset_button.disabled = True
+            self.send_hello_button.disabled = True
 
         self.creator_text_input.disabled = False
         self.last_modified_by_text_input.disabled = False
@@ -513,23 +522,63 @@ class ScreenManagement(ScreenManager):
 
 
 class MainUi(Screen):
+    def update_reset_metadata_button(self, preferences_valid: bool | None = None):
+        if preferences_valid is None:
+            preferences_valid = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH).valid
+
+        if preferences_valid:
+            if self.default_values is not None:
+                self.ids.reset_button.disabled = False
+            else:
+                self.ids.reset_button.disabled = True
+        else:
+            self.ids.reset_button.disabled = True
+
+    def update_send_hello_button(self, preferences_valid: bool | None = None):
+        if preferences_valid is None:
+            preferences_valid = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH).valid
+
+        if preferences_valid:
+            if self.default_values is not None:
+                self.ids.send_hello_button.disabled = False
+            else:
+                self.ids.send_hello_button.disabled = True
+        else:
+            self.ids.send_hello_button.disabled = True
+
+    def update_save_button(self):
+        if self.default_values is None:
+            self.ids.save_button.disabled = True
+            return
+
+        if self.default_values.changed:
+            self.ids.save_button.disabled = False
+        else:
+            self.ids.save_button.disabled = True
+
     def check_preferences(self) -> None:
         new_command = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH)
         privet_smirnovoy_command = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH)
         try:
-            if not new_command.valid:
+            if not (preferences_valid := new_command.valid):
+                self.update_reset_metadata_button(preferences_valid)
                 self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
             else:
+                self.update_reset_metadata_button(preferences_valid)
                 self.hide_reset_button_warning()
         except FileNotFoundError:
+            self.update_reset_metadata_button(False)
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
 
         try:
-            if not privet_smirnovoy_command.valid:
+            if not (preferences_valid := privet_smirnovoy_command.valid):
+                self.update_send_hello_button(preferences_valid)
                 self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
             else:
+                self.update_send_hello_button(preferences_valid)
                 self.hide_send_hello_button_warning()
         except FileNotFoundError:
+            self.update_send_hello_button(False)
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
 
     @mainthread
@@ -601,7 +650,7 @@ class MainUi(Screen):
             self.ids.save_button.disabled = True
 
     def text_input_text_updated(self) -> None:
-        self.check_values_for_difference()
+        self.update_save_button()
 
     def save_button_pressed(self):
         self.ids.save_button.disabled = True
@@ -632,7 +681,7 @@ class MainUi(Screen):
                 case _:
                     metadata[value.input_name] = value.input_value
 
-        self.check_values_for_difference()
+        self.update_save_button()
 
     def reset_data_button_pressed(self):
         reset_process = Thread(target=self.reset_data)
@@ -787,7 +836,7 @@ class MainUi(Screen):
         else:
             self.hide_send_hello_button_warning()
 
-        self.check_values_for_difference()
+        self.update_save_button()
 
     def on_leave(self, *args):
         self.check_preferences_event.stop_clock()
