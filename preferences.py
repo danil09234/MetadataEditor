@@ -21,14 +21,6 @@ PRIVET_SMIRNOVOY_EDITING_TIME = 599940
 PRIVET_SMIRNOVOY_REVISION = 9999999
 
 
-class PreferenceNotFoundError(Exception):
-    pass
-
-
-class InvalidPreferenceValueError(Exception):
-    pass
-
-
 class InvalidPreferencesStructureError(Exception):
     pass
 
@@ -60,45 +52,45 @@ class NewCommandPreferences:
         try:
             return self.__preferences["new"]["application"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference application not found")
+            raise AttributeError("Preference application not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "new" is invalid')
+            raise AttributeError('Preferences section "new" is invalid')
 
     @property
     def creator(self) -> str:
         try:
             return self.__preferences["new"]["creator"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference creator not found")
+            raise AttributeError("Preference creator not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "new" is invalid')
+            raise AttributeError('Preferences section "new" is invalid')
 
     @property
     def last_modified_by(self) -> str:
         try:
             return self.__preferences["new"]["last modified by"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference last modified by not found")
+            raise AttributeError("Preference last modified by not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "new" is invalid')
+            raise AttributeError('Preferences section "new" is invalid')
 
     @property
     def editing_time(self) -> int:
         try:
             return self.__preferences["new"]["editing time"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference editing time not found")
+            raise AttributeError("Preference editing time not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "new" is invalid')
+            raise AttributeError('Preferences section "new" is invalid')
 
     @property
     def revision(self) -> int:
         try:
             return self.__preferences["new"]["revision"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference revision not found")
+            raise AttributeError("Preference revision not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "new" is invalid')
+            raise AttributeError('Preferences section "new" is invalid')
 
     def __init__(self, preferences_filepath: pathlib.Path = PREFERENCES_FILEPATH):
         self.__preferences_filepath = preferences_filepath
@@ -127,9 +119,9 @@ class PrivetSmirnovoyPreference:
         try:
             return self.__preferences["privet_smirnovoy"]["applications"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference applications time not found")
+            raise AttributeError("Preference applications time not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "privet_smirnovoy" is invalid')
+            raise AttributeError('Preferences section "privet_smirnovoy" is invalid')
 
     @property
     def random_application(self) -> str:
@@ -140,9 +132,9 @@ class PrivetSmirnovoyPreference:
         try:
             return self.__preferences["privet_smirnovoy"]["creators"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference creators not found")
+            raise AttributeError("Preference creators not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "privet_smirnovoy" is invalid')
+            raise AttributeError('Preferences section "privet_smirnovoy" is invalid')
 
     @property
     def random_creator(self) -> str:
@@ -161,7 +153,7 @@ class PrivetSmirnovoyPreference:
         elif len(unique_creators) == self.creators_number:
             return self.creators
         else:
-            raise InvalidPreferenceValueError
+            raise ValueError("Invalid preferences value")
 
     @property
     def random_creators_string(self):
@@ -178,9 +170,9 @@ class PrivetSmirnovoyPreference:
         try:
             return self.__preferences["privet_smirnovoy"]["modifiers"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference modifiers not found")
+            raise AttributeError("Preference modifiers not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "privet_smirnovoy" is invalid')
+            raise AttributeError('Preferences section "privet_smirnovoy" is invalid')
 
     @property
     def random_modifier(self) -> str:
@@ -199,7 +191,7 @@ class PrivetSmirnovoyPreference:
         elif len(unique_modifiers) == self.modifiers_number:
             return self.modifiers
         else:
-            raise InvalidPreferenceValueError
+            raise ValueError("Invalid preferences value")
 
     @property
     def random_modifiers_string(self) -> str:
@@ -216,18 +208,18 @@ class PrivetSmirnovoyPreference:
         try:
             return self.__preferences["privet_smirnovoy"]["creators number"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference creators number not found")
+            raise AttributeError("Preference creators number not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "privet_smirnovoy" is invalid')
+            raise AttributeError('Preferences section "privet_smirnovoy" is invalid')
 
     @property
     def modifiers_number(self) -> int:
         try:
             return self.__preferences["privet_smirnovoy"]["modifiers number"]
         except KeyError:
-            raise PreferenceNotFoundError("Preference modifiers number not found")
+            raise AttributeError("Preference modifiers number not found")
         except TypeError:
-            raise PreferenceNotFoundError('Preferences section "privet_smirnovoy" is invalid')
+            raise AttributeError('Preferences section "privet_smirnovoy" is invalid')
     
     def __init__(self, preferences_filepath: pathlib.Path = PREFERENCES_FILEPATH):
         self.__preferences_filepath = preferences_filepath
