@@ -1,4 +1,6 @@
+import os
 import pathlib
+import sys
 from threading import Thread
 from typing import Iterable
 
@@ -13,8 +15,6 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.properties import VariableListProperty, StringProperty, ObjectProperty
 
-from textwrap import wrap
-
 from kivymd.app import MDApp
 
 import preferences
@@ -23,23 +23,6 @@ import word
 
 Window.minimum_width = preferences.GUI_MINIMUM_WIDTH
 Window.minimum_height = preferences.GUI_MINIMUM_HEIGHT
-
-
-def label_text_wrap(text: str, label_width, label) -> str:
-    if label.texture_size[0] == 0:
-        return text
-
-    if label.texture_size[0] != label_width:
-        max_line_length = len((lines := label.text.split("\n"))[0])
-        for line in lines:
-            if (new_len := len(line)) > max_line_length:
-                max_line_length = new_len
-
-        char_width = label.texture_size[0] / max_line_length
-        wrapped_text = '\n'.join(wrap(text, int(label_width / char_width)))
-        return wrapped_text
-    else:
-        return text
 
 
 class FileDragAndDropperStateLabel(BoxLayout):
@@ -533,15 +516,21 @@ class MainUi(Screen):
     def check_preferences(self) -> None:
         new_command = preferences.NewCommandPreferences(preferences.PREFERENCES_FILEPATH)
         privet_smirnovoy_command = preferences.PrivetSmirnovoyPreference(preferences.PREFERENCES_FILEPATH)
-        if not new_command.valid:
-            self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
-        else:
-            self.hide_reset_button_warning()
+        try:
+            if not new_command.valid:
+                self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            else:
+                self.hide_reset_button_warning()
+        except FileNotFoundError:
+            self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
 
-        if not privet_smirnovoy_command.valid:
-            self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
-        else:
-            self.hide_send_hello_button_warning()
+        try:
+            if not privet_smirnovoy_command.valid:
+                self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+            else:
+                self.hide_send_hello_button_warning()
+        except FileNotFoundError:
+            self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
 
     @mainthread
     def show_reset_button_warning(self, text: str | None = None):
@@ -819,5 +808,10 @@ class AntismirnovaApp(MDApp):
 
 
 if __name__ == "__main__":
+    from kivy.resources import resource_add_path, resource_find
+
+    if hasattr(sys, '_MEIPASS'):
+        resource_add_path(os.path.join(sys._MEIPASS))
+
     Config.set('graphics', 'maxfps', 0)
     AntismirnovaApp().run()
