@@ -439,15 +439,16 @@ class FileDragAndDropper(BoxLayout):
 
         try:
             preferences_valid = preferences.Preferences().valid
+        except FileNotFoundError:
+            self.reset_button.disabled = True
+            self.send_hello_button.disabled = True
+        else:
             if preferences_valid:
                 self.reset_button.disabled = False
                 self.send_hello_button.disabled = False
             else:
                 self.reset_button.disabled = True
                 self.send_hello_button.disabled = True
-        except FileNotFoundError:
-            self.reset_button.disabled = True
-            self.send_hello_button.disabled = True
 
         self.creator_text_input.disabled = False
         self.last_modified_by_text_input.disabled = False
