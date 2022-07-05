@@ -9,7 +9,7 @@ import os
 
 
 @click.group()
-@click.version_option(version="Release 1.0")
+@click.version_option(version="Release 1.0.1")
 def main():
     pass
 
