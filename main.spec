@@ -6,7 +6,7 @@ from kivy_deps import sdl2, glew
 from kivymd import hooks_path as kivymd_hooks_path
 
 
-block_cipher = pyi_crypto.PyiBlockCipher(key='jshelcmei59-gh-3')
+block_cipher = pyi_crypto.PyiBlockCipher(key=os.environ.get("MAIN_PYINSTALLER_KEY"))
 path = os.path.abspath(".")
 
 
