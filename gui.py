@@ -311,14 +311,14 @@ class FileDragAndDropper(BoxLayout):
 
         old_text, label.text = label.text, new_text
 
-        def set_default():
+        def set_default(*_):
             label.text = old_text
             self.drag_and_drop_text_changing = False
 
         if period is not None:
             Clock.schedule_once(set_default, period)
 
-    def invalid_file_animation(self, *args):
+    def invalid_file_animation(self, *_):
         if self.current_state == "label":
             canvas_color = self.__state_label_box_layout.canvas.before.get_group("bg_color")[0]
             canvas = self.__state_label_box_layout.canvas.before.get_group("background")[0]
@@ -461,7 +461,7 @@ class FileDragAndDropper(BoxLayout):
 
         self.save_button.disabled = True
 
-    def _on_file_drop(self, window, file_path, x, y):
+    def _on_file_drop(self, window, file_path, *_):
         for children in window.children:
             match children:
                 case ScreenManagement():
@@ -577,7 +577,8 @@ class MainUi(Screen):
         try:
             if not (preferences_valid := privet_smirnovoy_command.valid):
                 self.update_send_hello_button(preferences_valid)
-                self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
+                self.show_send_hello_button_warning(f'Invalid structure of '
+                                                    f'"{preferences.PREFERENCES_FILEPATH.name}" file.')
             else:
                 self.update_send_hello_button(preferences_valid)
                 self.hide_send_hello_button_warning()
@@ -620,6 +621,24 @@ class MainUi(Screen):
             duration=0.3
         )
         animation.start(self.ids.send_hello_button_warning_icon)
+
+    @mainthread
+    def show_save_button_warning(self, text: str | None = None):
+        if text is not None:
+            self.ids.save_button_warning_icon.tooltip_text = text
+        animation = Animation(
+            opacity=1,
+            duration=0.3
+        )
+        animation.start(self.ids.save_button_warning_icon)
+
+    @mainthread
+    def hide_save_button_warning(self):
+        animation = Animation(
+            opacity=0,
+            duration=0.3
+        )
+        animation.start(self.ids.save_button_warning_icon)
 
     @mainthread
     def update_text_inputs(self,
@@ -675,15 +694,23 @@ class MainUi(Screen):
             if not current_file.exists():
                 self.ids.file_drag_and_dropper.set_state("label")
                 break
-            match value.input_name:
-                case str("revision" | "TotalTime"):
-                    match value.input_value:
-                        case str():
-                            metadata[value.input_name] = int(value.input_value)
-                        case None:
-                            metadata[value.input_name] = value.input_value
-                case _:
-                    metadata[value.input_name] = value.input_value
+            try:
+                match value.input_name:
+                    case str("revision" | "TotalTime"):
+                        match value.input_value:
+                            case str():
+                                metadata[value.input_name] = int(value.input_value)
+                            case None:
+                                metadata[value.input_name] = value.input_value
+                    case _:
+                        metadata[value.input_name] = value.input_value
+            except PermissionError:
+                self.show_save_button_warning(f"Not enough permissions for saving "
+                                              f'"{self.ids.file_drag_and_dropper.current_working_file.name}".\n'
+                                              f"Maybe the file is already opened in Word?")
+                break
+        else:
+            self.hide_save_button_warning()
 
         self.update_save_button()
 
@@ -861,7 +888,7 @@ class AntismirnovaApp(MDApp):
 
 
 if __name__ == "__main__":
-    from kivy.resources import resource_add_path, resource_find
+    from kivy.resources import resource_add_path
 
     if hasattr(sys, '_MEIPASS'):
         resource_add_path(os.path.join(sys._MEIPASS))
