@@ -24,6 +24,9 @@ import word
 Window.minimum_width = preferences.GUI_MINIMUM_WIDTH
 Window.minimum_height = preferences.GUI_MINIMUM_HEIGHT
 
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
+Config.set('graphics', 'maxfps', 0)
+
 
 class FileDragAndDropperStateLabel(BoxLayout):
     bg_color = VariableListProperty([0, 0, 0, 0])
@@ -863,5 +866,4 @@ if __name__ == "__main__":
     if hasattr(sys, '_MEIPASS'):
         resource_add_path(os.path.join(sys._MEIPASS))
 
-    Config.set('graphics', 'maxfps', 0)
     AntismirnovaApp().run()
