@@ -27,12 +27,12 @@ class InvalidPreferencesStructureError(Exception):
 
 class NewCommandPreferences:
     def __dump(self):
-        with open(self.__preferences_filepath, "w") as yaml_file:
+        with open(self.__preferences_filepath, "w", encoding="utf-8") as yaml_file:
             yaml_file.write(yaml.safe_dump(self.__preferences))
 
     @property
     def __preferences(self) -> dict:
-        with open(self.__preferences_filepath, "r") as yaml_file:
+        with open(self.__preferences_filepath, "r", encoding="utf-8") as yaml_file:
             try:
                 preferences_dict = yaml.safe_load(yaml_file)
             except yaml.YAMLError:
@@ -99,7 +99,7 @@ class NewCommandPreferences:
 class PrivetSmirnovoyPreference:
     @property
     def __preferences(self) -> dict:
-        with open(self.__preferences_filepath, "r") as yaml_file:
+        with open(self.__preferences_filepath, "r", encoding="utf-8") as yaml_file:
             try:
                 preferences_dict = yaml.safe_load(yaml_file)
             except yaml.YAMLError:
