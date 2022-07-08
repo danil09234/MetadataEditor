@@ -445,6 +445,9 @@ class FileDragAndDropper(BoxLayout):
         except FileNotFoundError:
             self.reset_button.disabled = True
             self.send_hello_button.disabled = True
+        except UnicodeDecodeError:
+            self.reset_button.disabled = True
+            self.send_hello_button.disabled = True
         else:
             if preferences_valid:
                 self.reset_button.disabled = False
@@ -573,6 +576,9 @@ class MainUi(Screen):
         except FileNotFoundError:
             self.update_reset_metadata_button(False)
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
+        except UnicodeDecodeError:
+            self.update_reset_metadata_button(False)
+            self.show_reset_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
 
         try:
             if not (preferences_valid := privet_smirnovoy_command.valid):
@@ -585,6 +591,9 @@ class MainUi(Screen):
         except FileNotFoundError:
             self.update_send_hello_button(False)
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
+        except UnicodeDecodeError:
+            self.update_send_hello_button(False)
+            self.show_send_hello_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
 
     @mainthread
     def show_reset_button_warning(self, text: str | None = None):
@@ -737,6 +746,9 @@ class MainUi(Screen):
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
+        except UnicodeDecodeError:
+            self.show_reset_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
+            return
 
         revision = preferences.DEFAULT_WORD_REVISION
         try:
@@ -748,6 +760,9 @@ class MainUi(Screen):
             return
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
+            return
+        except UnicodeDecodeError:
+            self.show_reset_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
             return
 
         creator = preferences.DEFAULT_WORD_CREATOR
@@ -761,6 +776,9 @@ class MainUi(Screen):
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
+        except UnicodeDecodeError:
+            self.show_reset_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
+            return
 
         last_modified_by = preferences.DEFAULT_WORD_LAST_MODIFIED_BY
         try:
@@ -773,6 +791,9 @@ class MainUi(Screen):
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
+        except UnicodeDecodeError:
+            self.show_reset_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
+            return
 
         application_name = preferences.DEFAULT_WORD_APPLICATION_NAME
         try:
@@ -784,6 +805,9 @@ class MainUi(Screen):
             return
         except FileNotFoundError:
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
+            return
+        except UnicodeDecodeError:
+            self.show_reset_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
             return
 
         self.update_text_inputs(
@@ -822,6 +846,9 @@ class MainUi(Screen):
         except FileNotFoundError:
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
+        except UnicodeDecodeError:
+            self.show_send_hello_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
+            return
 
         random_modifiers_string = None
         try:
@@ -836,6 +863,9 @@ class MainUi(Screen):
         except FileNotFoundError:
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
             return
+        except UnicodeDecodeError:
+            self.show_send_hello_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
+            return
 
         random_application = None
         try:
@@ -847,6 +877,9 @@ class MainUi(Screen):
             return
         except FileNotFoundError:
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
+            return
+        except UnicodeDecodeError:
+            self.show_send_hello_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
             return
 
         self.update_text_inputs(
