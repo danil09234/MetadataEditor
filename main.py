@@ -149,6 +149,9 @@ def new(file: pathlib.Path):
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
+        except UnicodeDecodeError:
+            click.secho(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.', fg="red")
+            return
 
         revision = preferences.DEFAULT_WORD_REVISION
         try:
@@ -162,6 +165,9 @@ def new(file: pathlib.Path):
             return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            return
+        except UnicodeDecodeError:
+            click.secho(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.', fg="red")
             return
 
         creator = preferences.DEFAULT_WORD_CREATOR
@@ -177,6 +183,9 @@ def new(file: pathlib.Path):
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
+        except UnicodeDecodeError:
+            click.secho(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.', fg="red")
+            return
 
         last_modified_by = preferences.DEFAULT_WORD_LAST_MODIFIED_BY
         try:
@@ -191,6 +200,9 @@ def new(file: pathlib.Path):
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
+        except UnicodeDecodeError:
+            click.secho(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.', fg="red")
+            return
 
         application_name = preferences.DEFAULT_WORD_APPLICATION_NAME
         try:
@@ -204,6 +216,9 @@ def new(file: pathlib.Path):
             return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            return
+        except UnicodeDecodeError:
+            click.secho(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.', fg="red")
             return
 
         word_file_metadata.editing_time = editing_time
@@ -249,6 +264,9 @@ def privet_smirnovoy(file: pathlib.Path):
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
+        except UnicodeDecodeError:
+            click.secho(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.', fg="red")
+            return
 
         random_modifiers_string = None
         try:
@@ -265,6 +283,9 @@ def privet_smirnovoy(file: pathlib.Path):
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
             return
+        except UnicodeDecodeError:
+            click.secho(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.', fg="red")
+            return
 
         random_application = None
         try:
@@ -277,6 +298,9 @@ def privet_smirnovoy(file: pathlib.Path):
             return
         except FileNotFoundError:
             click.secho(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.', fg="red")
+            return
+        except UnicodeDecodeError:
+            click.secho(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.', fg="red")
             return
 
         word_file_metadata.editing_time = preferences.PRIVET_SMIRNOVOY_EDITING_TIME
