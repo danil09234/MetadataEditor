@@ -441,20 +441,16 @@ class FileDragAndDropper(BoxLayout):
         self.initialize_word_file_animation()
 
         try:
-            preferences_valid = preferences.Preferences().valid
-        except FileNotFoundError:
+            self.reset_button.disabled = not preferences.NewCommandPreferences().valid
+        except (preferences.InvalidPreferencesStructureError, FileNotFoundError, UnicodeDecodeError,
+                AttributeError, ValueError, TypeError):
             self.reset_button.disabled = True
+
+        try:
+            self.send_hello_button.disabled = not preferences.PrivetSmirnovoyPreference().valid
+        except (preferences.InvalidPreferencesStructureError, FileNotFoundError, UnicodeDecodeError,
+                AttributeError, ValueError, TypeError):
             self.send_hello_button.disabled = True
-        except UnicodeDecodeError:
-            self.reset_button.disabled = True
-            self.send_hello_button.disabled = True
-        else:
-            if preferences_valid:
-                self.reset_button.disabled = False
-                self.send_hello_button.disabled = False
-            else:
-                self.reset_button.disabled = True
-                self.send_hello_button.disabled = True
 
         self.creator_text_input.disabled = False
         self.last_modified_by_text_input.disabled = False
@@ -531,7 +527,11 @@ class ScreenManagement(ScreenManager):
 class MainUi(Screen):
     def update_reset_metadata_button(self, preferences_valid: bool | None = None):
         if preferences_valid is None:
-            preferences_valid = preferences.NewCommandPreferences().valid
+            try:
+                preferences_valid = preferences.NewCommandPreferences().valid
+            except (preferences.InvalidPreferencesStructureError, FileNotFoundError, UnicodeDecodeError,
+                    AttributeError, ValueError, TypeError):
+                preferences_valid = False
 
         if preferences_valid:
             if self.default_values is not None:
@@ -543,7 +543,11 @@ class MainUi(Screen):
 
     def update_send_hello_button(self, preferences_valid: bool | None = None):
         if preferences_valid is None:
-            preferences_valid = preferences.PrivetSmirnovoyPreference().valid
+            try:
+                preferences_valid = preferences.PrivetSmirnovoyPreference().valid
+            except (preferences.InvalidPreferencesStructureError, FileNotFoundError, UnicodeDecodeError,
+                    AttributeError, ValueError, TypeError):
+                preferences_valid = False
 
         if preferences_valid:
             if self.default_values is not None:
@@ -566,34 +570,43 @@ class MainUi(Screen):
     def check_preferences(self) -> None:
         new_command = preferences.NewCommandPreferences()
         privet_smirnovoy_command = preferences.PrivetSmirnovoyPreference()
+
         try:
-            if not (preferences_valid := new_command.valid):
-                self.update_reset_metadata_button(preferences_valid)
-                self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
-            else:
-                self.update_reset_metadata_button(preferences_valid)
+            if new_command.valid:
+                self.update_reset_metadata_button(True)
                 self.hide_reset_button_warning()
+        except preferences.InvalidPreferencesStructureError:
+            self.update_reset_metadata_button(False)
+            self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
         except FileNotFoundError:
             self.update_reset_metadata_button(False)
             self.show_reset_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
         except UnicodeDecodeError:
             self.update_reset_metadata_button(False)
             self.show_reset_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
+        except (AttributeError, ValueError, TypeError):
+            self.update_reset_metadata_button(False)
+            self.show_reset_button_warning(f"Some preferences was not found or invalid\n"
+                                           f"Please, check {preferences.PREFERENCES_FILEPATH.name}")
 
         try:
-            if not (preferences_valid := privet_smirnovoy_command.valid):
-                self.update_send_hello_button(preferences_valid)
-                self.show_send_hello_button_warning(f'Invalid structure of '
-                                                    f'"{preferences.PREFERENCES_FILEPATH.name}" file.')
-            else:
-                self.update_send_hello_button(preferences_valid)
+            if privet_smirnovoy_command.valid:
+                self.update_send_hello_button(True)
                 self.hide_send_hello_button_warning()
+        except preferences.InvalidPreferencesStructureError:
+            self.update_send_hello_button(False)
+            self.show_send_hello_button_warning(f'Invalid structure of '
+                                                f'"{preferences.PREFERENCES_FILEPATH.name}" file.')
         except FileNotFoundError:
             self.update_send_hello_button(False)
             self.show_send_hello_button_warning(f'File "{preferences.PREFERENCES_FILEPATH.name}" not found.')
         except UnicodeDecodeError:
             self.update_send_hello_button(False)
             self.show_send_hello_button_warning(f'Encoding of "{preferences.PREFERENCES_FILEPATH.name}" must be UTF-8.')
+        except (AttributeError, ValueError, TypeError):
+            self.update_send_hello_button(False)
+            self.show_send_hello_button_warning(f"Some preferences was not found or invalid\n"
+                                                f"Please, check {preferences.PREFERENCES_FILEPATH.name}")
 
     @mainthread
     def show_reset_button_warning(self, text: str | None = None):
@@ -738,7 +751,7 @@ class MainUi(Screen):
         editing_time = preferences.DEFAULT_WORD_EDITING_TIME
         try:
             editing_time = new_command_preferences.editing_time
-        except AttributeError:
+        except (AttributeError, ValueError, TypeError):
             completed_with_errors = True
         except preferences.InvalidPreferencesStructureError:
             self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
@@ -753,7 +766,7 @@ class MainUi(Screen):
         revision = preferences.DEFAULT_WORD_REVISION
         try:
             revision = new_command_preferences.revision
-        except AttributeError:
+        except (AttributeError, ValueError, TypeError):
             completed_with_errors = True
         except preferences.InvalidPreferencesStructureError:
             self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
@@ -768,7 +781,7 @@ class MainUi(Screen):
         creator = preferences.DEFAULT_WORD_CREATOR
         try:
             creator = new_command_preferences.creator
-        except AttributeError:
+        except (AttributeError, ValueError, TypeError):
             completed_with_errors = True
         except preferences.InvalidPreferencesStructureError:
             self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
@@ -783,7 +796,7 @@ class MainUi(Screen):
         last_modified_by = preferences.DEFAULT_WORD_LAST_MODIFIED_BY
         try:
             last_modified_by = new_command_preferences.last_modified_by
-        except AttributeError:
+        except (AttributeError, ValueError, TypeError):
             completed_with_errors = True
         except preferences.InvalidPreferencesStructureError:
             self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
@@ -798,7 +811,7 @@ class MainUi(Screen):
         application_name = preferences.DEFAULT_WORD_APPLICATION_NAME
         try:
             application_name = new_command_preferences.application
-        except AttributeError:
+        except (AttributeError, ValueError, TypeError):
             completed_with_errors = True
         except preferences.InvalidPreferencesStructureError:
             self.show_reset_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
@@ -813,9 +826,9 @@ class MainUi(Screen):
         self.update_text_inputs(
             editing_time_text_input=str(editing_time),
             revision_text_input=str(revision),
-            creator_text_input=creator,
-            last_modified_by_text_input=last_modified_by,
-            application_text_input=application_name
+            creator_text_input=str(creator),
+            last_modified_by_text_input=str(last_modified_by),
+            application_text_input=str(application_name)
         )
 
         if completed_with_errors:
@@ -836,9 +849,7 @@ class MainUi(Screen):
         random_creators_string = None
         try:
             random_creators_string = privet_smirnovoy_preferences.random_creators_string
-        except AttributeError:
-            completed_with_errors = True
-        except ValueError:
+        except (AttributeError, ValueError, TypeError):
             completed_with_errors = True
         except preferences.InvalidPreferencesStructureError:
             self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
@@ -853,9 +864,7 @@ class MainUi(Screen):
         random_modifiers_string = None
         try:
             random_modifiers_string = privet_smirnovoy_preferences.random_modifiers_string
-        except AttributeError:
-            completed_with_errors = True
-        except ValueError:
+        except (AttributeError, ValueError, TypeError):
             completed_with_errors = True
         except preferences.InvalidPreferencesStructureError:
             self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
@@ -870,7 +879,7 @@ class MainUi(Screen):
         random_application = None
         try:
             random_application = privet_smirnovoy_preferences.random_application
-        except AttributeError:
+        except (AttributeError, ValueError, TypeError):
             completed_with_errors = True
         except preferences.InvalidPreferencesStructureError:
             self.show_send_hello_button_warning(f'Invalid structure of "{preferences.PREFERENCES_FILEPATH.name}" file.')
@@ -888,11 +897,11 @@ class MainUi(Screen):
         )
 
         if random_creators_string is not None:
-            self.update_text_inputs(creator_text_input=random_creators_string)
+            self.update_text_inputs(creator_text_input=str(random_creators_string))
         if random_modifiers_string is not None:
-            self.update_text_inputs(last_modified_by_text_input=random_modifiers_string)
+            self.update_text_inputs(last_modified_by_text_input=str(random_modifiers_string))
         if random_application is not None:
-            self.update_text_inputs(application_text_input=random_application)
+            self.update_text_inputs(application_text_input=str(random_application))
 
         if completed_with_errors:
             self.show_send_hello_button_warning(f"Some preferences was not found or invalid\n"

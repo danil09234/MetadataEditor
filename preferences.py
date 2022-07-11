@@ -41,11 +41,13 @@ class NewCommandPreferences:
 
     @property
     def valid(self) -> bool:
-        try:
-            _ = self.__preferences
-            return True
-        except InvalidPreferencesStructureError:
-            return False
+        _ = self.application
+        _ = self.creator
+        _ = self.last_modified_by
+        _ = self.editing_time
+        _ = self.revision
+
+        return True
 
     @property
     def application(self) -> str:
@@ -108,18 +110,27 @@ class PrivetSmirnovoyPreference:
 
     @property
     def valid(self) -> bool:
-        try:
-            _ = self.__preferences
-            return True
-        except InvalidPreferencesStructureError:
-            return False
+        _ = self.applications
+        _ = self.random_application
+        _ = self.creators
+        _ = self.random_creator
+        _ = self.random_creators_list
+        _ = self.random_creators_string
+        _ = self.modifiers
+        _ = self.random_modifier
+        _ = self.random_modifiers_list
+        _ = self.random_modifiers_string
+        _ = self.creators_number
+        _ = self.modifiers_number
+
+        return True
 
     @property
     def applications(self) -> list:
         try:
             return self.__preferences["privet_smirnovoy"]["applications"]
         except KeyError:
-            raise AttributeError("Preference applications time not found")
+            raise AttributeError("Preference applications not found")
         except TypeError:
             raise AttributeError('Preferences section "privet_smirnovoy" is invalid')
 
@@ -228,9 +239,7 @@ class PrivetSmirnovoyPreference:
 class Preferences:
     @property
     def valid(self) -> bool:
-        if self.new_command.valid and self.privet_smirnovoy.valid:
-            return True
-        return False
+        return self.new_command.valid and self.privet_smirnovoy.valid
 
     @property
     def new_command(self):
