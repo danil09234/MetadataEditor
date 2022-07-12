@@ -94,7 +94,10 @@ class NewCommandPreferences:
     @property
     def revision(self) -> int:
         try:
-            return self.__preferences["new"]["revision"]
+            if (value := str(self.__preferences["new"]["revision"])).isdigit():
+                return int(value)
+            else:
+                raise ValueError('Revision value must be integer')
         except KeyError:
             raise AttributeError("Preference revision not found")
         except TypeError:
