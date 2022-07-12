@@ -6,7 +6,7 @@
 #:import MDIcon kivymd.uix.label
 #:import MDTooltip kivymd.uix.tooltip
 
-#:set only_integers lambda text, from_undo: text if text in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] else ""
+#:set only_integers lambda text, *_: text if text in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] else ""
 
 <ScreenManagement>:
     transition: FadeTransition()
@@ -275,5 +275,5 @@
                         radius: 0, 0, 10, 0
                         disabled: True
                         background_disabled_normal: utils.get_color_from_hex("beccd4")
-                        input_filter: only_integers
+                        input_filter: lambda text, from_undo: text[:9 - len(self.text)] if text in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] else ""
                         text_changed_function: lambda *_: root.text_input_text_updated()
