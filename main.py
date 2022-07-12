@@ -108,8 +108,8 @@ def change_application(file: pathlib.Path, new_application: str):
 
 @click.command()
 @click.argument("file", type=pathlib.Path)
-@click.argument("new_editing_time", type=int)
-def change_editing_time(file: pathlib.Path, new_editing_time: str):
+@click.argument("new_editing_time", type=click.IntRange(min=0, min_open=False, max=999999999, max_open=False))
+def change_editing_time(file: pathlib.Path, new_editing_time: int):
     """Change file editing time"""
     if file.exists() is False:
         click.echo(click.style(f"File {file} was not found.", fg="red"))
@@ -321,13 +321,6 @@ def privet_smirnovoy(file: pathlib.Path):
         click.echo(click.style(f"File type {file.suffix} is not yet available.", fg="red"))
 
 
-@click.command()
-def open_gui():
-    """Open graphical user interface"""
-    import gui
-    gui.AntismirnovaApp().run()
-
-
 main.add_command(get_metadata)
 main.add_command(change_creator)
 main.add_command(change_modifier)
@@ -336,13 +329,7 @@ main.add_command(change_application)
 main.add_command(change_editing_time)
 main.add_command(new)
 main.add_command(privet_smirnovoy)
-main.add_command(open_gui)
 
 
 if __name__ == "__main__":
-    logging.disable(logging.CRITICAL)
-
-    from kivy.resources import resource_add_path, resource_find
-    if hasattr(sys, '_MEIPASS'):
-        resource_add_path(os.path.join(sys._MEIPASS))
     main()
