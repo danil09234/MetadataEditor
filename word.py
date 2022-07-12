@@ -535,11 +535,20 @@ class Metadata:
     @editing_time.setter
     def editing_time(self, value: int | None):
         match value:
-            case int() | None:
+            case int():
+                if len(str(value)) >= 10:
+                    raise ValueError("Metadata.editing_time length should be less than 10 digits")
                 self.__extract_all()
                 property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
                 app = WordAppXml(property_xml_file)
                 app.total_time = value
+                self.__pack_all()
+                self.__remove_temp_folder()
+            case None:
+                self.__extract_all()
+                property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
+                app = WordAppXml(property_xml_file)
+                app.total_time = None
                 self.__pack_all()
                 self.__remove_temp_folder()
             case _:

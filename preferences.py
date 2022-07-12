@@ -79,7 +79,13 @@ class NewCommandPreferences:
     @property
     def editing_time(self) -> int:
         try:
-            return self.__preferences["new"]["editing time"]
+            if (value := str(self.__preferences["new"]["editing time"])).isdigit():
+                if len(str(int(value))) < 10:
+                    return int(value)
+                else:
+                    raise ValueError("Editing time value should consist of less than 10 digits")
+            else:
+                raise ValueError("Editing time value must be integer")
         except KeyError:
             raise AttributeError("Preference editing time not found")
         except TypeError:
