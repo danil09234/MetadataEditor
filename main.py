@@ -2,14 +2,10 @@ import word
 import pathlib
 import click
 import preferences
-import logging
-
-import sys
-import os
 
 
 @click.group()
-@click.version_option(version="Release 1.0.1")
+@click.version_option(version="Release 1.0.2")
 def main():
     pass
 
