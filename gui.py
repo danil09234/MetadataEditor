@@ -502,6 +502,14 @@ class CustomTextInput(AnchorLayout):
     def change_input_filter(instance, value):
         instance.__text_input.input_filter = value
 
+    @property
+    def scroll_x(self):
+        return self.__text_input.scroll_x
+
+    @scroll_x.setter
+    def scroll_x(self, value):
+        self.__text_input.scroll_x = value
+
     def __init__(self, **kwargs):
         super(CustomTextInput, self).__init__(**kwargs)
 
@@ -671,14 +679,19 @@ class MainUi(Screen):
                            application_text_input: str | None = None):
         if editing_time_text_input is not None:
             self.ids.editing_time_text_input.text = editing_time_text_input
+            self.ids.editing_time_text_input.scroll_x = 0
         if revision_text_input is not None:
             self.ids.revision_text_input.text = revision_text_input
+            self.ids.revision_text_input.scroll_x = 0
         if creator_text_input is not None:
             self.ids.creator_text_input.text = creator_text_input
+            self.ids.creator_text_input.scroll_x = 0
         if last_modified_by_text_input is not None:
             self.ids.last_modified_by_text_input.text = last_modified_by_text_input
+            self.ids.last_modified_by_text_input.scroll_x = 0
         if application_text_input is not None:
             self.ids.application_text_input.text = application_text_input
+            self.ids.application_text_input.scroll_x = 0
 
     @property
     def default_values(self) -> TextInputsDefaultValues:
