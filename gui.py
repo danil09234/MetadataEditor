@@ -939,6 +939,7 @@ class MainUi(Screen):
 class AntismirnovaApp(MDApp):
     def build(self):
         self.icon = "images/app_icon.png"
+        self.title = 'Metadata Editor'
         return ScreenManagement()
 
 
