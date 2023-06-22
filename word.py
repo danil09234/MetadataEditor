@@ -524,7 +524,7 @@ class Metadata:
                 raise TypeError(f"Metadata.application_name should be str or None (not {type(value)})")
 
     @property
-    def editing_time(self) -> int:
+    def editing_time(self) -> int | None:
         self.__extract_all()
         property_xml_file = pathlib.Path(self._temp_folder_path, "docProps", "app.xml")
         app = WordAppXml(property_xml_file)
